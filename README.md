@@ -1,4 +1,4 @@
-
+![alt text](<kasbah trek.png>)
 # 📘 Kasbah Trek – World Cup 2030 Tourism Platform
 
 > 🏔️ Mountains, lakes, forests, traditional life — special tours for World Cup 2030 visitors.
