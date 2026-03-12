@@ -70,7 +70,7 @@ The platform ensures safe, verified, and organized tour experiences.
 | Layer            | Technology                      |
 | ---------------- | ------------------------------- |
 | Backend          | Laravel (MVC)                   |
-| Frontend         | HTML, CSS, Bootstrap / Tailwind |
+| Frontend         | Angular 18 (SCSS)              |
 | Database         |  PostgreSQL                     |
 | Email            | Laravel Mail (SMTP)             |
 | Payment          | Stripe / PayPal                 |
@@ -81,15 +81,41 @@ The platform ensures safe, verified, and organized tour experiences.
 
 ---
 
+## 📁 Project Structure
+
+* `backend/` → Laravel application source code
+* `frontend/` → Angular 18 SPA (dev server on port 4200; proxies `/api` to backend)
+* `nginx/` → Nginx configuration
+* `Dockerfile` / `docker-compose.yml` → Backend, Frontend (Angular), DB
+
+---
+
 ## 🐳 Docker Environment
 
-The project is fully containerized using Docker.
+The project is fully containerized using Docker (backend, frontend, and DB).
 
 ### 📦 Services
 
-* **App** → Laravel (PHP-FPM)
-* **Web Server** → Nginx
-* **Database** → PostgreSQL
+| Service    | Description                                      | Port (default) |
+| --------- | ------------------------------------------------ | -------------- |
+| **frontend** | Angular 18 dev server (proxies `/api` → Nginx) | 4200           |
+| **kasbah_app** | Laravel (PHP-FPM)                             | —              |
+| **nginx** | Web server for Laravel                           | 8080           |
+| **postgres** | PostgreSQL                                    | 5432           |
+| **pgadmin** | pgAdmin UI                                    | 5050           |
+
+### 🚀 Run with Docker
+
+```bash
+# From repo root
+docker compose up --build
+```
+
+- **Angular app:** http://localhost:4200 (set `ANGULAR_PORT` in `.env` to change)
+- **Laravel (via Nginx):** http://localhost:8080
+- **pgAdmin:** http://localhost:5050 (see `.env` for `PGADMIN_*`)
+
+The frontend container runs `ng serve` with a proxy so requests to `/api` are forwarded to Nginx (Laravel).
 
 ---
 

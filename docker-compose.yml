@@ -1,5 +1,19 @@
 services:
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: kasbah_frontend
+    ports:
+      - "${ANGULAR_PORT:-4200}:4200"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - nginx
+    stdin_open: true
+    tty: true
 
   kasbah_app:
     build:
@@ -52,3 +66,4 @@ services:
 
 volumes:
   pgtables:
+  frontend_node_modules:
