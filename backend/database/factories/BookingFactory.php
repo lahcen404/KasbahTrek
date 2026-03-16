@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\BookingStatus;
+use App\Models\Tour;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -14,10 +17,13 @@ class BookingFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition(): array
-    {
-        return [
-            //
-        ];
-    }
+   public function definition(): array {
+    return [
+        'date' => fake()->dateTimeBetween('now', '+1 month'),
+        'total_price' => fake()->randomFloat(2, 200, 1000),
+        'status' => BookingStatus::PENDING,
+        'traveler_id' => User::factory(),
+        'tour_id' => Tour::factory(),
+    ];
+}
 }
