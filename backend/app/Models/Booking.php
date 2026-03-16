@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Enums\BookingStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['date', 'total_price', 'status', 'traveler_id', 'tour_id', 'guide_id'];
 
     protected $casts = [

@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use App\Enums\DifficultyLevel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Tour extends Model
 {
+
+    use HasFactory;
+
     protected $fillable = [
         'title', 'description', 'location', 'price',
         'difficulty', 'max_spots', 'current_bookings', 'guide_id'
