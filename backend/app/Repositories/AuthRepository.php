@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Interfaces\AuthRepositoryInterface;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,7 @@ class AuthRepository implements AuthRepositoryInterface {
     public function findByEmail(string $email) {
         return User::where('email', $email)->first();
     }
+
 
     public function createToken(string $email, string $password): ?string
     {

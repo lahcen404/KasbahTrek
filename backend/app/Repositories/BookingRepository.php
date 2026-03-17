@@ -30,11 +30,16 @@ class BookingRepository implements BookingRepositoryInterface
                 'guide_id' => $tour->guide_id,
             ]);
 
-            
+
             $tour->increment('current_bookings');
 
             return $booking;
         });
+    }
+
+
+    public function findById(int $id){
+        return Booking::with(['tour', 'traveler'])->findOrFail($id);
     }
 
     public function getByTraveler(int $travelerId)

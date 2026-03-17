@@ -54,15 +54,29 @@ class BookingController extends Controller
     }
 
     // as guide update booking status
-    public function updateStatus(Request $request, $id)
-    {
-        $request->validate(['status' => 'required|string']);
+   public function updateStatus(Request $request, $id)
+{
+    // find the booking
+    $booking = $this->bookingRepository->findById($id);
 
-        $booking = $this->bookingRepository->updateStatus($id, $request->status);
-
+    // check is booking belongs to guide
+    if ($booking->guide_id !== auth()->id()) {
         return response()->json([
-            'message' => "Booking status updated to {$request->status}",
-            'booking' => $booking
-        ]);
+            'message' => 'Unauthorized: This booking is for a tour you do not manage !!!'
+        ], 403);
     }
+
+    // vaalidation
+    $request->validate([
+        'status' => 'required|string|in:CONFIRMED,CANCELLED'
+    ]);
+
+
+    $updatedBooking = $this->bookingRepository->updateStatus($id, $request->status);
+
+    return response()->json([
+        'message' => "Booking status updated to {$request->status}",
+        'booking' => $updatedBooking
+    ]);
+}
 }

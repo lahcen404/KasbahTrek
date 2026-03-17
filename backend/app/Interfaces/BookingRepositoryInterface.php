@@ -8,4 +8,5 @@ interface BookingRepositoryInterface
     public function getByTraveler(int $travelerId);
     public function getByGuide(int $guideId);
     public function updateStatus(int $id, string $status);
+    public function findById(int $id);
 }
