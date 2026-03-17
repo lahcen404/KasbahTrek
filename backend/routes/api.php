@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\TourController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,5 +29,13 @@ Route::middleware(['auth.custom', 'role:GUIDE'])->group(function() {
     Route::put('/tours/{id}', [TourController::class, 'update']);
     Route::delete('/tours/{id}', [TourController::class, 'destroy']);
     Route::post('/tours/{id}/images', [TourController::class, 'uploadImages']);
-    
+
+    Route::get('/guide/bookings', [BookingController::class, 'guideBookings']);
+    Route::patch('/bookings/{id}/status', [BookingController::class, 'updateStatus']);
+
 });
+
+Route::middleware(['auth.custom','role:TRAVELER'])->group(function () {
+        Route::post('/bookings', [BookingController::class, 'store']);
+        Route::get('/my-bookings', [BookingController::class, 'myBookings']);
+    });
