@@ -1,5 +1,7 @@
 <?php
 
+use App\Interfaces\AuthRepositoryInterface;
+use App\Repositories\AuthRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,4 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
+    })->booting(function ($app) {
+
+        $app->bind(AuthRepositoryInterface::class, AuthRepository::class);
     })->create();
