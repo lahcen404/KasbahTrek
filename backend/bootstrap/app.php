@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CustomApiAuth;
 use App\Interfaces\AuthRepositoryInterface;
 use App\Repositories\AuthRepository;
 use Illuminate\Foundation\Application;
@@ -13,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias(['custom.auth' => CustomApiAuth::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
