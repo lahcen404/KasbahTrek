@@ -79,4 +79,31 @@ class BookingController extends Controller
         'booking' => $updatedBooking
     ]);
 }
+
+// cancel booking as traveler
+public function cancel(Request $request, $id)
+{
+
+    $booking = $this->bookingRepository->findById($id);
+
+    // check if booking belongs to the authenticated traveler
+    if ($booking->traveler_id !== auth()->id()) {
+        return response()->json([
+            'message' => 'Unauthorized: You cannot cancel someone else\'s booking.'
+        ], 403);
+    }
+
+    if ($booking->status->value === 'CANCELLED') {
+        return response()->json(['message' => 'This booking is already cancelled.'], 400);
+    }
+
+    // 4. Proceed with cancellation
+    $cancelledBooking = $this->bookingRepository->cancel($id);
+
+    return response()->json([
+        'message' => 'Booking cancelled successfully !!',
+        'booking' => $cancelledBooking
+    ]);
+}
+
 }
