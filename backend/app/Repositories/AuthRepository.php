@@ -44,9 +44,24 @@ class AuthRepository implements AuthRepositoryInterface {
         return Auth::attempt($credentials);
     }
 
-    public function logout(): void {
-        Auth::logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
-    }
+    // register
+    public function register(array $data)
+{
+    return User::create([
+        'fullname' => $data['fullname'],
+        'email' => $data['email'],
+        'password' => Hash::make($data['password']),
+        'role' => $data['role'] ?? 'TRAVELER',
+    ]);
+}
+
+    public function logout(string $plainToken)
+{
+    $hashedToken = hash('sha256', $plainToken);
+
+
+    DB::table('personal_access_tokens')
+        ->where('token', $hashedToken)
+        ->delete();
+}
 }

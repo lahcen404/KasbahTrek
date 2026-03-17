@@ -49,4 +49,39 @@ class AuthController extends Controller
             ]
         ], 200);
     }
+
+    //register
+    public function register(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'fullname' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|string|min:6|confirmed',
+        'role' => 'required|string'
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 422);
+    }
+
+    $user = $this->authRepository->register($request->all());
+
+    return response()->json([
+        'message' => 'User registered successfully',
+        'user' => $user
+    ], 201);
+}
+
+// logout
+public function logout(Request $request)
+{
+    $header = $request->header('Authorization');
+    $plainToken = str_replace('Bearer ', '', $header);
+
+    $this->authRepository->logout($plainToken);
+
+    return response()->json([
+        'message' => 'Successfully logged out !!'
+    ], 200);
+}
 }

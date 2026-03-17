@@ -12,6 +12,9 @@ interface AuthRepositoryInterface {
     // attempt login
     public function attemptLogin(array $credentials): bool;
 
+    // register
+    public function register(array $data);
+
     // logout
-    public function logout(): void;
+    public function logout(string $plainToken);
 }
