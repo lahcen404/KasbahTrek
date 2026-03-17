@@ -22,6 +22,7 @@ Route::middleware(['auth.custom'])->group(function() {
 
 });
 
-Route::middleware(['auth.custom', 'role:guide'])->group(function() {
+Route::middleware(['auth.custom', 'role:GUIDE'])->group(function() {
     Route::post('/tours', [TourController::class, 'store']);
+    Route::post('/tours/{id}/images', [TourController::class, 'uploadImages']);
 });

@@ -2,6 +2,7 @@
 namespace App\Repositories;
 
 use App\Interfaces\TourRepositoryInterface;
+use App\Models\Image;
 use App\Models\Tour;
 
 class TourRepository implements TourRepositoryInterface
@@ -38,4 +39,12 @@ class TourRepository implements TourRepositoryInterface
     {
         return Tour::where('guide_id', $guideId)->with('images')->get();
     }
+
+    public function addImage(int $tourId, string $path)
+{
+    return Image::create([
+        'tour_id' => $tourId,
+        'path' => $path
+    ]);
+}
 }

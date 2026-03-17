@@ -9,4 +9,5 @@ interface TourRepositoryInterface
     public function update(int $id, array $data);
     public function delete(int $id);
     public function getByGuide(int $guideId);
+    public function addImage(int $tourId, string $path);
 }

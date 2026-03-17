@@ -52,4 +52,32 @@ class TourController extends Controller
         $tour = $this->tourRepository->findById($id);
         return response()->json($tour);
     }
+
+    // upload images
+    public function uploadImages(Request $request, $id)
+{
+    $request->validate([
+        'images.*' => 'required|image|mimes:jpeg,png,jpg|max:2048' // max 2MB per image
+    ]);
+
+    $tour = $this->tourRepository->findById($id);
+    $uploadedImages = [];
+
+    if ($request->hasFile('images')) {
+        foreach ($request->file('images') as $file) {
+            // stooore the file in 'storage/app/public/tours'
+            $path = $file->store('tours', 'public');
+
+            // save in DB
+            $imageRecord = $this->tourRepository->addImage($tour->id, $path);
+
+            $uploadedImages[] = $imageRecord;
+        }
+    }
+
+    return response()->json([
+        'message' => 'Images uploaded successfully',
+        'data' => $uploadedImages
+    ], 201);
+}
 }
