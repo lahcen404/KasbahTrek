@@ -58,4 +58,23 @@ class BookingRepository implements BookingRepositoryInterface
         $booking->update(['status' => $status]);
         return $booking;
     }
+
+    // cancel booking
+    public function cancel(int $id)
+{
+    return DB::transaction(function () use ($id) {
+        $booking = Booking::findOrFail($id);
+
+        
+        $booking->update(['status' => 'CANCELLED']);
+
+        // decrement current_bookings for the tour
+        $tour = Tour::findOrFail($booking->tour_id);
+        if ($tour->current_bookings > 0) {
+            $tour->decrement('current_bookings');
+        }
+
+        return $booking;
+    });
+}
 }
