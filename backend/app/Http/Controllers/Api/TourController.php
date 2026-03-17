@@ -53,11 +53,57 @@ class TourController extends Controller
         return response()->json($tour);
     }
 
+    // updaaate a tour
+    public function update(Request $request, $id)
+    {
+        $tour = $this->tourRepository->findById($id);
+
+        if ($tour->guide_id !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized: You do not own this tour!!'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'sometimes|string|max:255',
+            'description' => 'sometimes|string',
+            'location' => 'sometimes|string',
+            'price' => 'sometimes|numeric',
+            'difficulty' => 'sometimes|string',
+            'max_spots' => 'sometimes|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $updatedTour = $this->tourRepository->update($id, $request->all());
+
+        return response()->json([
+            'message' => 'Tour updated successfully!',
+            'tour' => $updatedTour
+        ]);
+    }
+
+    // deelete a tour
+    public function destroy($id)
+    {
+        $tour = $this->tourRepository->findById($id);
+
+        if ($tour->guide_id !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized: You do not own this tour!!'], 403);
+        }
+
+        $this->tourRepository->delete($id);
+
+        return response()->json([
+            'message' => 'Tour deleted successfully!'
+        ], 200);
+    }
+
     // upload images
     public function uploadImages(Request $request, $id)
 {
     $request->validate([
-        'images.*' => 'required|image|mimes:jpeg,png,jpg|max:2048' // max 2MB per image
+        'images.*' => 'required|image|mimes:jpeg,png,jpg'
     ]);
 
     $tour = $this->tourRepository->findById($id);
