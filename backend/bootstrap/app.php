@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CustomApiAuth;
 use App\Interfaces\AuthRepositoryInterface;
 use App\Repositories\AuthRepository;
@@ -14,7 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['custom.auth' => CustomApiAuth::class]);
+        $middleware->alias(['custom.auth' => CustomApiAuth::class,
+        'check.role' => CheckRole::class
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
