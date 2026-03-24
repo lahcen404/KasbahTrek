@@ -15,6 +15,8 @@ return new class extends Migration
         $table->foreignId('traveler_id')->constrained('users')->onDelete('cascade');
         $table->foreignId('tour_id')->constrained('tours')->onDelete('cascade');
         $table->timestamps();
+
+        $table->unique(['traveler_id', 'tour_id']);
     });
 }
 
