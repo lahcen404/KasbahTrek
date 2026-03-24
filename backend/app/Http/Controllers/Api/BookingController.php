@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Booking\StoreBookingRequest;
+use App\Http\Requests\Api\Booking\UpdateBookingStatusRequest;
 use App\Interfaces\BookingRepositoryInterface;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class BookingController extends Controller
 {
@@ -16,94 +16,72 @@ class BookingController extends Controller
         $this->bookingRepository = $bookingRepository;
     }
 
-    // creaate booking
-    public function store(Request $request)
+    public function store(StoreBookingRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'tour_id' => 'required|exists:tours,id',
-            'date' => 'required|date|after:today',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
         try {
-            $booking = $this->bookingRepository->create($request->all());
+            $booking = $this->bookingRepository->create($request->validated());
+
             return response()->json([
                 'message' => 'Booking request sent successfully!',
-                'booking' => $booking
+                'booking' => $booking,
             ], 201);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);
         }
     }
 
-    // as traveler get my bookings
     public function myBookings()
     {
         $bookings = $this->bookingRepository->getByTraveler(auth()->id());
+
         return response()->json($bookings);
     }
 
-    // as guide get bookings for my tours
     public function guideBookings()
     {
         $bookings = $this->bookingRepository->getByGuide(auth()->id());
+
         return response()->json($bookings);
     }
 
-    // as guide update booking status
-   public function updateStatus(Request $request, $id)
-{
-    // find the booking
-    $booking = $this->bookingRepository->findById($id);
+    public function updateStatus(UpdateBookingStatusRequest $request, $id)
+    {
+        $booking = $this->bookingRepository->findById($id);
 
-    // check is booking belongs to guide
-    if ($booking->guide_id !== auth()->id()) {
+        if ($booking->guide_id !== auth()->id()) {
+            return response()->json([
+                'message' => 'Unauthorized: This booking is for a tour you do not manage !!!',
+            ], 403);
+        }
+
+        $status = $request->validated('status');
+        $updatedBooking = $this->bookingRepository->updateStatus($id, $status);
+
         return response()->json([
-            'message' => 'Unauthorized: This booking is for a tour you do not manage !!!'
-        ], 403);
+            'message' => "Booking status updated to {$status}",
+            'booking' => $updatedBooking,
+        ]);
     }
 
-    // vaalidation
-    $request->validate([
-        'status' => 'required|string|in:CONFIRMED,CANCELLED'
-    ]);
+    public function cancel($id)
+    {
+        $booking = $this->bookingRepository->findById($id);
 
+        if ($booking->traveler_id !== auth()->id()) {
+            return response()->json([
+                'message' => 'Unauthorized: You cannot cancel someone else\'s booking.',
+            ], 403);
+        }
 
-    $updatedBooking = $this->bookingRepository->updateStatus($id, $request->status);
+        if ($booking->status->value === 'CANCELLED') {
+            return response()->json(['message' => 'This booking is already cancelled.'], 400);
+        }
 
-    return response()->json([
-        'message' => "Booking status updated to {$request->status}",
-        'booking' => $updatedBooking
-    ]);
-}
+        $cancelledBooking = $this->bookingRepository->cancel($id);
 
-// cancel booking as traveler
-public function cancel(Request $request, $id)
-{
-
-    $booking = $this->bookingRepository->findById($id);
-
-    // check if booking belongs to the authenticated traveler
-    if ($booking->traveler_id !== auth()->id()) {
         return response()->json([
-            'message' => 'Unauthorized: You cannot cancel someone else\'s booking.'
-        ], 403);
+            'message' => 'Booking cancelled successfully !!',
+            'booking' => $cancelledBooking,
+        ]);
     }
-
-    if ($booking->status->value === 'CANCELLED') {
-        return response()->json(['message' => 'This booking is already cancelled.'], 400);
-    }
-
-    // 4. Proceed with cancellation
-    $cancelledBooking = $this->bookingRepository->cancel($id);
-
-    return response()->json([
-        'message' => 'Booking cancelled successfully !!',
-        'booking' => $cancelledBooking
-    ]);
-}
-
 }

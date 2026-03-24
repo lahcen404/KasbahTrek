@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Auth\LoginRequest;
+use App\Http\Requests\Api\Auth\RegisterRequest;
 use App\Interfaces\AuthRepositoryInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use App\Http\Controllers\Controller;
 
 class AuthController extends Controller
 {
@@ -16,29 +17,18 @@ class AuthController extends Controller
         $this->authRepository = $authRepository;
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        // valiiidation
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email',
-            'password' => 'required|string|min:6',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        // create tokkeen
         $token = $this->authRepository->createToken(
-            $request->email,
-            $request->password
+            $request->validated('email'),
+            $request->validated('password')
         );
 
         if (!$token) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        $user = $this->authRepository->findByEmail($request->email);
+        $user = $this->authRepository->findByEmail($request->validated('email'));
 
         return response()->json([
             'message' => 'Login successful',
@@ -46,42 +36,29 @@ class AuthController extends Controller
             'user' => [
                 'fullname' => $user->fullname,
                 'role' => $user->role->value,
-            ]
+            ],
         ], 200);
     }
 
-    //register
-    public function register(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'fullname' => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email',
-        'password' => 'required|string|min:6|confirmed',
-        'role' => 'required|string'
-    ]);
+    public function register(RegisterRequest $request)
+    {
+        $user = $this->authRepository->register($request->validated());
 
-    if ($validator->fails()) {
-        return response()->json($validator->errors(), 422);
+        return response()->json([
+            'message' => 'User registered successfully',
+            'user' => $user,
+        ], 201);
     }
 
-    $user = $this->authRepository->register($request->all());
+    public function logout(Request $request)
+    {
+        $header = $request->header('Authorization');
+        $plainToken = str_replace('Bearer ', '', $header);
 
-    return response()->json([
-        'message' => 'User registered successfully',
-        'user' => $user
-    ], 201);
-}
+        $this->authRepository->logout($plainToken);
 
-// logout
-public function logout(Request $request)
-{
-    $header = $request->header('Authorization');
-    $plainToken = str_replace('Bearer ', '', $header);
-
-    $this->authRepository->logout($plainToken);
-
-    return response()->json([
-        'message' => 'Successfully logged out !!'
-    ], 200);
-}
+        return response()->json([
+            'message' => 'Successfully logged out !!',
+        ], 200);
+    }
 }
