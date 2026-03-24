@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\TourController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // PUBLIIIC routes
@@ -35,9 +35,13 @@ Route::middleware(['auth.custom', 'role:GUIDE'])->group(function() {
 
 });
 
-Route::middleware(['auth.custom','role:TRAVELER'])->group(function () {
+Route::middleware(['auth.custom', 'role:TRAVELER'])->group(function () {
 
-        Route::patch('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
-        Route::post('/bookings', [BookingController::class, 'store']);
-        Route::get('/my-bookings', [BookingController::class, 'myBookings']);
-    });
+    Route::patch('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
+    Route::post('/bookings', [BookingController::class, 'store']);
+    Route::get('/my-bookings', [BookingController::class, 'myBookings']);
+
+    Route::get('/favorites', [FavoriteController::class, 'list']);
+    Route::post('/favorites', [FavoriteController::class, 'add']);
+    Route::delete('/favorites/{tourId}', [FavoriteController::class, 'remove']);
+});
