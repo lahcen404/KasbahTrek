@@ -4,8 +4,10 @@ use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CustomApiAuth;
 use App\Interfaces\AuthRepositoryInterface;
 use App\Interfaces\FavoriteRepositoryInterface;
+use App\Interfaces\ReviewRepositoryInterface;
 use App\Repositories\AuthRepository;
 use App\Repositories\FavoriteRepository;
+use App\Repositories\ReviewRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -29,4 +31,5 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $app->bind(AuthRepositoryInterface::class, AuthRepository::class);
         $app->bind(FavoriteRepositoryInterface::class, FavoriteRepository::class);
+        $app->bind(ReviewRepositoryInterface::class, ReviewRepository::class);
     })->create();
