@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TourController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // tours
 Route::get('/tours', [TourController::class, 'index']);
 Route::get('/tours/{id}', [TourController::class, 'show']);
+Route::get('/tours/{id}/reviews', [ReviewController::class, 'tourReviews']);
 
 
 // PROTEEECTED routes
@@ -44,4 +46,7 @@ Route::middleware(['auth.custom', 'role:TRAVELER'])->group(function () {
     Route::get('/favorites', [FavoriteController::class, 'list']);
     Route::post('/favorites', [FavoriteController::class, 'add']);
     Route::delete('/favorites/{tourId}', [FavoriteController::class, 'remove']);
+
+    Route::post('/reviews', [ReviewController::class, 'add']);
+    Route::get('/my-reviews', [ReviewController::class, 'myReviews']);
 });
