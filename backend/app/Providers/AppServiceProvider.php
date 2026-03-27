@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Interfaces\AdminUserRepositoryInterface;
 use App\Interfaces\AuthRepositoryInterface;
 use App\Interfaces\BookingRepositoryInterface;
 use App\Interfaces\TourRepositoryInterface;
+use App\Repositories\AdminUserRepository;
 use App\Repositories\AuthRepository;
 use App\Repositories\BookingRepository;
 use App\Repositories\TourRepository;
@@ -30,6 +32,11 @@ class AppServiceProvider extends ServiceProvider
     $this->app->bind(
         BookingRepositoryInterface::class,
         BookingRepository::class
+    );
+
+    $this->app->bind(
+        AdminUserRepositoryInterface::class,
+        AdminUserRepository::class
     );
 
     }
