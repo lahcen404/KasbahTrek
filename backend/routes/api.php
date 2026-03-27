@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TourController;
 use Illuminate\Support\Facades\Route;
@@ -49,4 +50,11 @@ Route::middleware(['auth.custom', 'role:TRAVELER'])->group(function () {
 
     Route::post('/reviews', [ReviewController::class, 'add']);
     Route::get('/my-reviews', [ReviewController::class, 'myReviews']);
+});
+
+Route::middleware(['auth.custom', 'role:ADMIN'])->prefix('admin')->group(function () {
+    Route::get('/users', [AdminUserController::class, 'index']);
+    Route::get('/users/{id}', [AdminUserController::class, 'show']);
+    Route::put('/users/{id}', [AdminUserController::class, 'update']);
+    Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
 });
