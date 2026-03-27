@@ -6,10 +6,12 @@ use App\Interfaces\AdminUserRepositoryInterface;
 use App\Interfaces\AuthRepositoryInterface;
 use App\Interfaces\BookingRepositoryInterface;
 use App\Interfaces\TourRepositoryInterface;
+use App\Interfaces\VerificationRepositoryInterface;
 use App\Repositories\AdminUserRepository;
 use App\Repositories\AuthRepository;
 use App\Repositories\BookingRepository;
 use App\Repositories\TourRepository;
+use App\Repositories\VerificationRepository;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -37,6 +39,11 @@ class AppServiceProvider extends ServiceProvider
     $this->app->bind(
         AdminUserRepositoryInterface::class,
         AdminUserRepository::class
+    );
+
+    $this->app->bind(
+        VerificationRepositoryInterface::class,
+        VerificationRepository::class
     );
 
     }

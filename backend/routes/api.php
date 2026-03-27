@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TourController;
+use App\Http\Controllers\Api\VerificationController;
 use Illuminate\Support\Facades\Route;
 
 // PUBLIIIC routes
@@ -36,6 +37,7 @@ Route::middleware(['auth.custom', 'role:GUIDE'])->group(function() {
     Route::get('/guide/bookings', [BookingController::class, 'guideBookings']);
     Route::patch('/bookings/{id}/status', [BookingController::class, 'updateStatus']);
 
+    Route::post('/guide/verifications', [VerificationController::class, 'store']);
 });
 
 Route::middleware(['auth.custom', 'role:TRAVELER'])->group(function () {
@@ -57,4 +59,7 @@ Route::middleware(['auth.custom', 'role:ADMIN'])->prefix('admin')->group(functio
     Route::get('/users/{id}', [AdminUserController::class, 'show']);
     Route::put('/users/{id}', [AdminUserController::class, 'update']);
     Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
+
+    Route::get('/verifications', [VerificationController::class, 'index']);
+    Route::patch('/verifications/{id}/status', [VerificationController::class, 'updateStatus']);
 });
