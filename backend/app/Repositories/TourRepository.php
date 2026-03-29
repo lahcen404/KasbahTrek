@@ -7,9 +7,34 @@ use App\Models\Tour;
 
 class TourRepository implements TourRepositoryInterface
 {
-    public function getAll()
+    public function getAll(array $filters = [])
     {
-        return Tour::with(['guide', 'images'])->get();
+        $query = Tour::with(['guide', 'images']);
+
+        if (isset($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('title', 'ilike', '%' . $filters['search'] . '%')
+                  ->orWhere('description', 'ilike', '%' . $filters['search'] . '%');
+            });
+        }
+
+        if (isset($filters['location'])) {
+            $query->where('location', 'ilike', '%' . $filters['location'] . '%');
+        }
+
+        if (isset($filters['difficulty'])) {
+            $query->where('difficulty', $filters['difficulty']);
+        }
+
+        if (isset($filters['min_price'])) {
+            $query->where('price', '>=', $filters['min_price']);
+        }
+
+        if (isset($filters['max_price'])) {
+            $query->where('price', '<=', $filters['max_price']);
+        }
+
+        return $query->get();
     }
 
     public function findById(int $id)

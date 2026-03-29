@@ -17,9 +17,9 @@ class TourController extends Controller
         $this->tourRepository = $tourRepository;
     }
 
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $tours = $this->tourRepository->getAll();
+        $tours = $this->tourRepository->getAll($request->all());
 
         return response()->json($tours);
     }
