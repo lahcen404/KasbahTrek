@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TourController;
 use App\Http\Controllers\Api\VerificationController;
+use App\Http\Controllers\Api\TripReportController;
+use App\Http\Controllers\Api\Admin\TripReportController as AdminTripReportController;
 use Illuminate\Support\Facades\Route;
 
 // PUBLIIIC routes
@@ -52,8 +54,9 @@ Route::middleware(['auth.custom', 'role:TRAVELER'])->group(function () {
 
     Route::post('/reviews', [ReviewController::class, 'add']);
     Route::get('/my-reviews', [ReviewController::class, 'myReviews']);
-});
 
+    Route::post('/reports', [TripReportController::class, 'store']);
+});
 Route::middleware(['auth.custom', 'role:ADMIN'])->prefix('admin')->group(function () {
     Route::get('/users', [AdminUserController::class, 'index']);
     Route::get('/users/{id}', [AdminUserController::class, 'show']);
@@ -62,4 +65,7 @@ Route::middleware(['auth.custom', 'role:ADMIN'])->prefix('admin')->group(functio
 
     Route::get('/verifications', [VerificationController::class, 'index']);
     Route::patch('/verifications/{id}/status', [VerificationController::class, 'updateStatus']);
+
+    Route::get('/reports', [AdminTripReportController::class, 'index']);
+    Route::patch('/reports/{id}/status', [AdminTripReportController::class, 'updateStatus']);
 });
