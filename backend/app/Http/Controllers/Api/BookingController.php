@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\BookingStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Booking\StoreBookingRequest;
 use App\Http\Requests\Api\Booking\UpdateBookingStatusRequest;
@@ -56,6 +57,9 @@ class BookingController extends Controller
 
         $status = $request->validated('status');
         $updatedBooking = $this->bookingRepository->updateStatus($id, $status);
+
+        // diispatch event to trigger the queue listener in the background
+        event(new BookingStatusUpdated($updatedBooking));
 
         return response()->json([
             'message' => "Booking status updated to {$status}",

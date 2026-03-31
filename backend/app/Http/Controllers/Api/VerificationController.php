@@ -54,6 +54,9 @@ class VerificationController extends Controller
     {
         $verification = $this->verificationRepository->updateStatus($id, $request->status);
 
+        // diiispatch event to trigger the email listener
+        event(new \App\Events\VerificationStatusUpdated($verification));
+
         return response()->json([
             'status' => 'success',
             'message' => 'Verification status updated successfully',
