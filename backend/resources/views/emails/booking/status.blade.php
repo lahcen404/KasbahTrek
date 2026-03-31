@@ -1,10 +1,12 @@
 <x-mail::message>
-# Introduction
+# Booking Status Update
 
-The body of your message.
+Hello {{ $booking->traveler->name }},
+
+The status of your booking for the tour **{{ $booking->tour->title }}** has been updated to: **{{ $booking->status }}**.
 
 <x-mail::button :url="''">
-Button Text
+View Bookings
 </x-mail::button>
 
 Thanks,<br>
