@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Events\BookingStatusUpdated;
+use App\Events\VerificationStatusUpdated;
 use App\Interfaces\AdminUserRepositoryInterface;
 use App\Interfaces\AuthRepositoryInterface;
 use App\Interfaces\BookingRepositoryInterface;
@@ -10,6 +11,7 @@ use App\Interfaces\TourRepositoryInterface;
 use App\Interfaces\TripReportRepositoryInterface;
 use App\Interfaces\VerificationRepositoryInterface;
 use App\Listeners\SendBookingStatusNotification;
+use App\Listeners\SendVerificationStatusNotification;
 use App\Repositories\AdminUserRepository;
 use App\Repositories\AuthRepository;
 use App\Repositories\BookingRepository;
@@ -65,6 +67,11 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Event::listen(
             BookingStatusUpdated::class,
             SendBookingStatusNotification::class
+        );
+
+        \Illuminate\Support\Facades\Event::listen(
+            VerificationStatusUpdated::class,
+            SendVerificationStatusNotification::class
         );
     }
 }
