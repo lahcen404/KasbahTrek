@@ -8,6 +8,7 @@ use App\Events\VerificationStatusUpdated;
 use App\Interfaces\AdminUserRepositoryInterface;
 use App\Interfaces\AuthRepositoryInterface;
 use App\Interfaces\BookingRepositoryInterface;
+use App\Interfaces\CategoryRepositoryInterface;
 use App\Interfaces\TourRepositoryInterface;
 use App\Interfaces\TripReportRepositoryInterface;
 use App\Interfaces\VerificationRepositoryInterface;
@@ -17,6 +18,7 @@ use App\Listeners\SendVerificationStatusNotification;
 use App\Repositories\AdminUserRepository;
 use App\Repositories\AuthRepository;
 use App\Repositories\BookingRepository;
+use App\Repositories\CategoryRepository;
 use App\Repositories\TourRepository;
 use App\Repositories\TripReportRepository;
 use App\Repositories\VerificationRepository;
@@ -29,6 +31,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(
+            CategoryRepositoryInterface::class,
+            CategoryRepository::class
+        );
+
         $this->app->bind(
         TourRepositoryInterface::class,
         TourRepository::class
