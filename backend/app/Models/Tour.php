@@ -13,7 +13,7 @@ class Tour extends Model
 
     protected $fillable = [
         'title', 'description', 'location', 'price',
-        'difficulty', 'max_spots', 'current_bookings', 'guide_id'
+        'difficulty', 'max_spots', 'current_bookings', 'guide_id', 'category_id'
     ];
 
     protected $casts = [
@@ -22,6 +22,7 @@ class Tour extends Model
     ];
 
     public function guide() { return $this->belongsTo(User::class, 'guide_id'); }
+    public function category() { return $this->belongsTo(Category::class); }
     public function images() { return $this->hasMany(Image::class); }
     public function bookings() { return $this->hasMany(Booking::class); }
     public function reviews() { return $this->hasMany(Review::class); }

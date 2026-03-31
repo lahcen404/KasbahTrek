@@ -20,6 +20,7 @@ class UpdateTourRequest extends FormRequest
             'price' => 'sometimes|numeric',
             'difficulty' => 'sometimes|string',
             'max_spots' => 'sometimes|integer|min:1',
+            'category_id' => 'sometimes|nullable|exists:categories,id',
         ];
     }
 }

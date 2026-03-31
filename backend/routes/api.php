@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\TourController;
 use App\Http\Controllers\Api\VerificationController;
 use App\Http\Controllers\Api\TripReportController;
 use App\Http\Controllers\Api\Admin\TripReportController as AdminTripReportController;
+use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Api\Admin\TourController as AdminTourController;
 use Illuminate\Support\Facades\Route;
 
 // PUBLIIIC routes
@@ -68,4 +70,9 @@ Route::middleware(['auth.custom', 'role:ADMIN'])->prefix('admin')->group(functio
 
     Route::get('/reports', [AdminTripReportController::class, 'index']);
     Route::patch('/reports/{id}/status', [AdminTripReportController::class, 'updateStatus']);
+
+    Route::apiResource('categories', AdminCategoryController::class)->except(['show']);
+
+    Route::get('/tours', [AdminTourController::class, 'index']);
+    Route::delete('/tours/{id}', [AdminTourController::class, 'destroy']);
 });
