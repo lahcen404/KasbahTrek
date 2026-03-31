@@ -30,6 +30,9 @@ class TripReportController extends Controller
 
         $report = $this->tripReportRepository->updateStatus($id, $validated['status']);
 
+        // diiispatch event to trigger the email listener
+        event(new \App\Events\TripReportStatusUpdated($report));
+
         return response()->json([
             'message' => 'Trip report status updated successfully !!!',
             'report' => $report,

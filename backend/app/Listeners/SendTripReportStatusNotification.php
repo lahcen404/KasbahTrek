@@ -3,24 +3,20 @@
 namespace App\Listeners;
 
 use App\Events\TripReportStatusUpdated;
+use App\Mail\TripReportStatusMail;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Mail;
 
-class SendTripReportStatusNotification
+class SendTripReportStatusNotification implements ShouldQueue
 {
-    /**
-     * Create the event listener.
-     */
     public function __construct()
     {
         //
     }
 
-    /**
-     * Handle the event.
-     */
     public function handle(TripReportStatusUpdated $event): void
     {
-        //
+        Mail::to($event->report->traveler->email)
+            ->send(new TripReportStatusMail($event->report));
     }
 }
