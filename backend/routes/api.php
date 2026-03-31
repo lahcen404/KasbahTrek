@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\VerificationController;
 use App\Http\Controllers\Api\TripReportController;
 use App\Http\Controllers\Api\Admin\TripReportController as AdminTripReportController;
 use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Api\Admin\StatisticController as AdminStatisticController;
 use App\Http\Controllers\Api\Admin\TourController as AdminTourController;
 use Illuminate\Support\Facades\Route;
 
@@ -67,6 +68,8 @@ Route::middleware(['auth.custom', 'role:ADMIN'])->prefix('admin')->group(functio
 
     Route::get('/verifications', [VerificationController::class, 'index']);
     Route::patch('/verifications/{id}/status', [VerificationController::class, 'updateStatus']);
+
+    Route::get('/stats', [AdminStatisticController::class, 'index']);
 
     Route::get('/reports', [AdminTripReportController::class, 'index']);
     Route::patch('/reports/{id}/status', [AdminTripReportController::class, 'updateStatus']);

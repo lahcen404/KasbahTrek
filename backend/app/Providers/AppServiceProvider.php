@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Events\BookingStatusUpdated;
 use App\Events\TripReportStatusUpdated;
 use App\Events\VerificationStatusUpdated;
+use App\Interfaces\AdminStatisticRepositoryInterface;
 use App\Interfaces\AdminUserRepositoryInterface;
 use App\Interfaces\AuthRepositoryInterface;
 use App\Interfaces\BookingRepositoryInterface;
@@ -15,6 +16,7 @@ use App\Interfaces\VerificationRepositoryInterface;
 use App\Listeners\SendBookingStatusNotification;
 use App\Listeners\SendTripReportStatusNotification;
 use App\Listeners\SendVerificationStatusNotification;
+use App\Repositories\AdminStatisticRepository;
 use App\Repositories\AdminUserRepository;
 use App\Repositories\AuthRepository;
 use App\Repositories\BookingRepository;
@@ -31,6 +33,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(
+            AdminStatisticRepositoryInterface::class,
+            AdminStatisticRepository::class
+        );
+
         $this->app->bind(
             CategoryRepositoryInterface::class,
             CategoryRepository::class
