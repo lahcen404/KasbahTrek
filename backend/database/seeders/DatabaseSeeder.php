@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 class DatabaseSeeder extends Seeder {
     public function run(): void {
 
+        $this->call(CategorySeeder::class);
+
         // admin Account
         User::create([
             'fullname' => 'Lahcen AIT MASKOUR',
