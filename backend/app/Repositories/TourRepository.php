@@ -9,7 +9,7 @@ class TourRepository implements TourRepositoryInterface
 {
     public function getAll(array $filters = [])
     {
-        $query = Tour::with(['guide', 'images']);
+        $query = Tour::with(['guide', 'images', 'category']);
 
         if (isset($filters['search'])) {
             $query->where(function ($q) use ($filters) {
@@ -20,6 +20,10 @@ class TourRepository implements TourRepositoryInterface
 
         if (isset($filters['location'])) {
             $query->where('location', 'ilike', '%' . $filters['location'] . '%');
+        }
+
+        if (! empty($filters['category_id'])) {
+            $query->where('category_id', $filters['category_id']);
         }
 
         if (isset($filters['difficulty'])) {
@@ -34,7 +38,42 @@ class TourRepository implements TourRepositoryInterface
             $query->where('price', '<=', $filters['max_price']);
         }
 
+        if (isset($filters['min_duration_hours'])) {
+            $query->where('duration_hours', '>=', $filters['min_duration_hours']);
+        }
+
+        if (isset($filters['max_duration_hours'])) {
+            $query->where('duration_hours', '<=', $filters['max_duration_hours']);
+        }
+
+        if ($this->filterTruthy($filters['verified_only'] ?? null)) {
+            $query->whereHas('guide', function ($q) {
+                $q->where('is_verified', true);
+            });
+        }
+
+        if ($this->filterTruthy($filters['available_only'] ?? null)) {
+            $query->whereColumn('current_bookings', '<', 'max_spots');
+        }
+
         return $query->get();
+    }
+
+    private function filterTruthy(mixed $value): bool
+    {
+        if ($value === null || $value === '') {
+            return false;
+        }
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            return in_array(strtolower($value), ['1', 'true', 'yes'], true);
+        }
+
+        return (bool) $value;
     }
 
     public function findById(int $id)

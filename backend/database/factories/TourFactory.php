@@ -24,6 +24,7 @@ class TourFactory extends Factory
         'price' => fake()->randomFloat(2, 100, 2000),
         'difficulty' => fake()->randomElement(DifficultyLevel::cases()),
         'max_spots' => fake()->numberBetween(5, 20),
+        'duration_hours' => fake()->numberBetween(2, 48),
         'current_bookings' => 0,
         'guide_id' => User::factory(),
     ];
