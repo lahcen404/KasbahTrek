@@ -24,7 +24,6 @@ The platform ensures safe, verified, and organized tour experiences.
 
 * Promote local tourism during World Cup 2030
 * Provide easy booking with real-time availability check
-* Integrate interactive maps
 * Enable secure online payments
 * Collect reviews and trip reports
 * Send automated email notifications
@@ -122,7 +121,6 @@ The frontend container runs `ng serve` with a proxy so requests to `/api` are fo
 ## 🔥 Core Features
 
 * ✅ Availability Check (Prevent Overbooking)
-* 🗺️ Google Maps Integration
 * 💳 Secure Online Payments (Stripe / PayPal)
 * ❤️ Favorites
 * ⭐ Reviews & Ratings
@@ -139,7 +137,6 @@ The frontend container runs `ng serve` with a proxy so requests to `/api` are fo
 * Verified guides
 * Safe bookings
 * Real-time availability
-* Interactive maps
 * Secure online payments
 * Reviews and reports
 
