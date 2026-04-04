@@ -15,7 +15,7 @@ services:
     stdin_open: true
     tty: true
 
-  kasbah_app:
+  kasbah_app:  
     build:
       context: ./
       dockerfile: ./Dockerfile
