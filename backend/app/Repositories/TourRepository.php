@@ -1,25 +1,45 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Interfaces\TourRepositoryInterface;
 use App\Models\Image;
 use App\Models\Tour;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class TourRepository implements TourRepositoryInterface
 {
-    public function getAll(array $filters = [])
+    public function getAll(array $filters = [], ?int $perPage = null): Collection|Paginator
+    {
+        unset($filters['page'], $filters['per_page']);
+        $query = $this->filteredQuery($filters);
+
+        if ($perPage === null) {
+            return $query->get();
+        }
+
+        $perPage = max(1, min(50, $perPage));
+
+        return $query->latest('tours.id')
+            ->simplePaginate($perPage)
+            ->withQueryString();
+    }
+
+    private function filteredQuery(array $filters): Builder
     {
         $query = Tour::with(['guide', 'images', 'category']);
 
         if (isset($filters['search'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('title', 'ilike', '%' . $filters['search'] . '%')
-                  ->orWhere('description', 'ilike', '%' . $filters['search'] . '%');
+                $q->where('title', 'ilike', '%'.$filters['search'].'%')
+                    ->orWhere('description', 'ilike', '%'.$filters['search'].'%');
             });
         }
 
         if (isset($filters['location'])) {
-            $query->where('location', 'ilike', '%' . $filters['location'] . '%');
+            $query->where('location', 'ilike', '%'.$filters['location'].'%');
         }
 
         if (! empty($filters['category_id'])) {
@@ -56,7 +76,7 @@ class TourRepository implements TourRepositoryInterface
             $query->whereColumn('current_bookings', '<', 'max_spots');
         }
 
-        return $query->get();
+        return $query;
     }
 
     private function filterTruthy(mixed $value): bool
@@ -90,12 +110,14 @@ class TourRepository implements TourRepositoryInterface
     {
         $tour = $this->findById($id);
         $tour->update($data);
+
         return $tour;
     }
 
     public function delete(int $id)
     {
         $tour = $this->findById($id);
+
         return $tour->delete();
     }
 
@@ -105,10 +127,10 @@ class TourRepository implements TourRepositoryInterface
     }
 
     public function addImage(int $tourId, string $path)
-{
-    return Image::create([
-        'tour_id' => $tourId,
-        'path' => $path
-    ]);
-}
+    {
+        return Image::create([
+            'tour_id' => $tourId,
+            'path' => $path,
+        ]);
+    }
 }

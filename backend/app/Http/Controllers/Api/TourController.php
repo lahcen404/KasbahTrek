@@ -7,6 +7,7 @@ use App\Http\Requests\Api\Tour\StoreTourRequest;
 use App\Http\Requests\Api\Tour\UpdateTourRequest;
 use App\Http\Requests\Api\Tour\UploadTourImagesRequest;
 use App\Interfaces\TourRepositoryInterface;
+use Illuminate\Http\Request;
 
 class TourController extends Controller
 {
@@ -17,11 +18,14 @@ class TourController extends Controller
         $this->tourRepository = $tourRepository;
     }
 
-    public function index(\Illuminate\Http\Request $request)
+    public function index(Request $request)
     {
-        $tours = $this->tourRepository->getAll($request->all());
-
-        return response()->json($tours);
+        return response()->json(
+            $this->tourRepository->getAll(
+                $request->except(['page', 'per_page']),
+                (int) $request->query('per_page', 15)
+            )
+        );
     }
 
     public function store(StoreTourRequest $request)
