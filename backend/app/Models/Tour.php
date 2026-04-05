@@ -13,12 +13,13 @@ class Tour extends Model
 
     protected $fillable = [
         'title', 'description', 'location', 'price',
-        'difficulty', 'max_spots', 'current_bookings', 'guide_id', 'category_id'
+        'difficulty', 'max_spots', 'duration_hours', 'current_bookings', 'guide_id', 'category_id',
     ];
 
     protected $casts = [
         'difficulty' => DifficultyLevel::class,
         'price' => 'float',
+        'duration_hours' => 'integer',
     ];
 
     public function guide() { return $this->belongsTo(User::class, 'guide_id'); }
