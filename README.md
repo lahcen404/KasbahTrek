@@ -116,6 +116,10 @@ docker compose up --build
 
 The frontend container runs `ng serve` with a proxy so requests to `/api` are forwarded to Nginx (Laravel).
 
+### 🧪 Testing & Artisan commands
+
+Full checklist (queue, scheduler, migrations, reminders, Postman base URLs): **[docs/TESTING.md](docs/TESTING.md)**
+
 ---
 
 ## 🔥 Core Features
