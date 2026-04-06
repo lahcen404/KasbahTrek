@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\BookingStatus;
+use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,12 +11,14 @@ class Booking extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['date', 'total_price', 'status', 'traveler_id', 'tour_id', 'guide_id', 'reminder_sent_at'];
+    protected $fillable = ['date', 'total_price', 'status', 'traveler_id', 'tour_id', 'guide_id', 'reminder_sent_at', 'payment_status', 'paid_at'];
 
     protected $casts = [
         'status' => BookingStatus::class,
         'date' => 'date',
         'reminder_sent_at' => 'datetime',
+        'payment_status' => PaymentStatus::class,
+        'paid_at' => 'datetime',
     ];
 
     public function traveler() { return $this->belongsTo(User::class, 'traveler_id'); }
