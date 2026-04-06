@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\PayPalWebhookController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\StripeWebhookController;
 use App\Http\Controllers\Api\TourController;
@@ -22,6 +23,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
+Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handle']);
 
 // tours
 Route::get('/tours', [TourController::class, 'index']);
@@ -52,6 +54,8 @@ Route::middleware(['auth.custom', 'role:TRAVELER'])->group(function () {
     Route::patch('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
     Route::post('/bookings', [BookingController::class, 'store']);
     Route::post('/bookings/{id}/checkout', [BookingController::class, 'checkout']);
+    Route::post('/bookings/{id}/paypal/checkout', [BookingController::class, 'paypalCheckout']);
+    Route::post('/bookings/{id}/paypal/capture', [BookingController::class, 'paypalCapture']);
     Route::get('/my-bookings', [BookingController::class, 'myBookings']);
 
     Route::get('/favorites', [FavoriteController::class, 'list']);

@@ -11,7 +11,7 @@ class Booking extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['date', 'total_price', 'status', 'traveler_id', 'tour_id', 'guide_id', 'reminder_sent_at', 'payment_status', 'paid_at', 'payment_receipt_sent_at'];
+    protected $fillable = ['date', 'total_price', 'status', 'traveler_id', 'tour_id', 'guide_id', 'reminder_sent_at', 'payment_status', 'paid_at', 'payment_receipt_sent_at', 'paypal_order_id'];
 
     protected $casts = [
         'status' => BookingStatus::class,
