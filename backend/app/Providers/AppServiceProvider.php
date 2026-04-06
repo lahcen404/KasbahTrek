@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Events\BookingPaymentReceived;
 use App\Events\BookingStatusUpdated;
 use App\Events\TripReportStatusUpdated;
 use App\Events\VerificationStatusUpdated;
@@ -13,6 +14,7 @@ use App\Interfaces\CategoryRepositoryInterface;
 use App\Interfaces\TourRepositoryInterface;
 use App\Interfaces\TripReportRepositoryInterface;
 use App\Interfaces\VerificationRepositoryInterface;
+use App\Listeners\SendBookingPaymentReceivedNotification;
 use App\Listeners\SendBookingStatusNotification;
 use App\Listeners\SendTripReportStatusNotification;
 use App\Listeners\SendVerificationStatusNotification;
@@ -44,34 +46,34 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
-        TourRepositoryInterface::class,
-        TourRepository::class
-    );
+            TourRepositoryInterface::class,
+            TourRepository::class
+        );
 
-    $this->app->bind(
-        AuthRepositoryInterface::class,
-        AuthRepository::class
-    );
+        $this->app->bind(
+            AuthRepositoryInterface::class,
+            AuthRepository::class
+        );
 
-    $this->app->bind(
-        BookingRepositoryInterface::class,
-        BookingRepository::class
-    );
+        $this->app->bind(
+            BookingRepositoryInterface::class,
+            BookingRepository::class
+        );
 
-    $this->app->bind(
-        AdminUserRepositoryInterface::class,
-        AdminUserRepository::class
-    );
+        $this->app->bind(
+            AdminUserRepositoryInterface::class,
+            AdminUserRepository::class
+        );
 
-    $this->app->bind(
-        VerificationRepositoryInterface::class,
-        VerificationRepository::class
-    );
+        $this->app->bind(
+            VerificationRepositoryInterface::class,
+            VerificationRepository::class
+        );
 
-    $this->app->bind(
-        TripReportRepositoryInterface::class,
-        TripReportRepository::class
-    );
+        $this->app->bind(
+            TripReportRepositoryInterface::class,
+            TripReportRepository::class
+        );
 
     }
 
@@ -83,6 +85,11 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Event::listen(
             BookingStatusUpdated::class,
             SendBookingStatusNotification::class
+        );
+
+        \Illuminate\Support\Facades\Event::listen(
+            BookingPaymentReceived::class,
+            SendBookingPaymentReceivedNotification::class
         );
 
         \Illuminate\Support\Facades\Event::listen(

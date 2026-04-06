@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\PaymentStatus;
+use App\Events\BookingPaymentReceived;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\Request;
@@ -55,6 +56,9 @@ class StripeWebhookController extends Controller
                 'payment_status' => PaymentStatus::PAID,
                 'paid_at' => now(),
             ]);
+
+            $booking->refresh()->load(['traveler', 'tour']);
+            event(new BookingPaymentReceived($booking));
         }
 
         return response()->json(['received' => true]);
