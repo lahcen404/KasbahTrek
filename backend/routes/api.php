@@ -1,17 +1,19 @@
 <?php
 
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\BookingController;
-use App\Http\Controllers\Api\FavoriteController;
-use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Api\ReviewController;
-use App\Http\Controllers\Api\TourController;
-use App\Http\Controllers\Api\VerificationController;
-use App\Http\Controllers\Api\TripReportController;
-use App\Http\Controllers\Api\Admin\TripReportController as AdminTripReportController;
 use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Api\Admin\StatisticController as AdminStatisticController;
 use App\Http\Controllers\Api\Admin\TourController as AdminTourController;
+use App\Http\Controllers\Api\Admin\TripReportController as AdminTripReportController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\PayPalWebhookController;
+use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\StripeWebhookController;
+use App\Http\Controllers\Api\TourController;
+use App\Http\Controllers\Api\TripReportController;
+use App\Http\Controllers\Api\VerificationController;
 use Illuminate\Support\Facades\Route;
 
 // PUBLIIIC routes
@@ -20,19 +22,21 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
+Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handle']);
+
 // tours
 Route::get('/tours', [TourController::class, 'index']);
 Route::get('/tours/{id}', [TourController::class, 'show']);
 Route::get('/tours/{id}/reviews', [ReviewController::class, 'tourReviews']);
 
-
 // PROTEEECTED routes
-Route::middleware(['auth.custom'])->group(function() {
-    Route::post('/logout',[AuthController::class, 'logout']);
+Route::middleware(['auth.custom'])->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
 
 });
 
-Route::middleware(['auth.custom', 'role:GUIDE'])->group(function() {
+Route::middleware(['auth.custom', 'role:GUIDE'])->group(function () {
 
     Route::post('/tours', [TourController::class, 'store']);
     Route::put('/tours/{id}', [TourController::class, 'update']);
@@ -49,6 +53,9 @@ Route::middleware(['auth.custom', 'role:TRAVELER'])->group(function () {
 
     Route::patch('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
     Route::post('/bookings', [BookingController::class, 'store']);
+    Route::post('/bookings/{id}/checkout', [BookingController::class, 'checkout']);
+    Route::post('/bookings/{id}/paypal/checkout', [BookingController::class, 'paypalCheckout']);
+    Route::post('/bookings/{id}/paypal/capture', [BookingController::class, 'paypalCapture']);
     Route::get('/my-bookings', [BookingController::class, 'myBookings']);
 
     Route::get('/favorites', [FavoriteController::class, 'list']);

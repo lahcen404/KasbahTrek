@@ -44,34 +44,34 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
-        TourRepositoryInterface::class,
-        TourRepository::class
-    );
+            TourRepositoryInterface::class,
+            TourRepository::class
+        );
 
-    $this->app->bind(
-        AuthRepositoryInterface::class,
-        AuthRepository::class
-    );
+        $this->app->bind(
+            AuthRepositoryInterface::class,
+            AuthRepository::class
+        );
 
-    $this->app->bind(
-        BookingRepositoryInterface::class,
-        BookingRepository::class
-    );
+        $this->app->bind(
+            BookingRepositoryInterface::class,
+            BookingRepository::class
+        );
 
-    $this->app->bind(
-        AdminUserRepositoryInterface::class,
-        AdminUserRepository::class
-    );
+        $this->app->bind(
+            AdminUserRepositoryInterface::class,
+            AdminUserRepository::class
+        );
 
-    $this->app->bind(
-        VerificationRepositoryInterface::class,
-        VerificationRepository::class
-    );
+        $this->app->bind(
+            VerificationRepositoryInterface::class,
+            VerificationRepository::class
+        );
 
-    $this->app->bind(
-        TripReportRepositoryInterface::class,
-        TripReportRepository::class
-    );
+        $this->app->bind(
+            TripReportRepositoryInterface::class,
+            TripReportRepository::class
+        );
 
     }
 
