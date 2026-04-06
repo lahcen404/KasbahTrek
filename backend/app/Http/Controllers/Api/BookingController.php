@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\BookingStatus;
+use App\Enums\PaymentStatus;
 use App\Events\BookingStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Booking\StoreBookingRequest;
 use App\Http\Requests\Api\Booking\UpdateBookingStatusRequest;
 use App\Interfaces\BookingRepositoryInterface;
+use Stripe\Exception\ApiErrorException;
+use Stripe\StripeClient;
 
 class BookingController extends Controller
 {
@@ -56,6 +60,13 @@ class BookingController extends Controller
         }
 
         $status = $request->validated('status');
+
+        if ($status === BookingStatus::CONFIRMED->value && $booking->payment_status !== PaymentStatus::PAID) {
+            return response()->json([
+                'message' => 'The traveler must complete payment before you can confirm this booking.',
+            ], 422);
+        }
+
         $updatedBooking = $this->bookingRepository->updateStatus($id, $status);
 
         // diispatch event to trigger the queue listener in the background
@@ -86,6 +97,62 @@ class BookingController extends Controller
         return response()->json([
             'message' => 'Booking cancelled successfully !!',
             'booking' => $cancelledBooking,
+        ]);
+    }
+
+    public function checkout(int $id)
+    {
+        $booking = $this->bookingRepository->findById($id);
+
+        if ($booking->traveler_id !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($booking->status !== BookingStatus::PENDING) {
+            return response()->json(['message' => 'Only pending bookings can be paid for.'], 422);
+        }
+
+        if (! in_array($booking->payment_status, [PaymentStatus::UNPAID, PaymentStatus::FAILED], true)) {
+            return response()->json(['message' => 'This booking is already paid or cannot be paid.'], 422);
+        }
+
+        $booking->loadMissing('tour');
+
+        $secret = config('stripe.secret');
+        if (! is_string($secret) || $secret === '') {
+            return response()->json(['message' => 'Stripe is not configured'], 500);
+        }
+
+        try {
+            $stripe = new StripeClient($secret);
+            $amountMinor = (int) round(((float) $booking->total_price) * 100);
+
+            $session = $stripe->checkout->sessions->create([
+                'mode' => 'payment',
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => config('stripe.currency'),
+                        'unit_amount' => $amountMinor,
+                        'product_data' => [
+                            'name' => $booking->tour->title,
+                            'description' => 'Booking #'.$booking->id,
+                        ],
+                    ],
+                    'quantity' => 1,
+                ]],
+                'metadata' => [
+                    'booking_id' => (string) $booking->id,
+                ],
+                'success_url' => config('stripe.success_url'),
+                'cancel_url' => config('stripe.cancel_url'),
+            ]);
+        } catch (ApiErrorException $e) {
+            return response()->json(['message' => $e->getMessage()], 502);
+        }
+
+        return response()->json([
+            'url' => $session->url,
+            'session_id' => $session->id,
         ]);
     }
 }

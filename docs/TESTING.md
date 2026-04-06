@@ -68,7 +68,40 @@ Default: `http://127.0.0.1:8000` — API routes are under **`/api`**.
 
 ---
 
-## 4. Database
+## 4. Commands to run **while** testing (queue, scheduler, Stripe)
+
+Use **separate terminals** (or tmux panes). Start the API first (**Docker** or **`php artisan serve`**), then:
+
+| What | Command | When you need it |
+|------|---------|------------------|
+| **Queue worker** | `cd backend && php artisan queue:work` | `QUEUE_CONNECTION` is `database` / `redis` — mails & queued jobs won’t run without it. Use **`queue:work -v`** for more output. |
+| **Scheduler** | `cd backend && php artisan schedule:work` | Daily **`bookings:send-reminders`** at **08:00** (`APP_TIMEZONE`). Optional if you only trigger reminders **manually**. |
+| **Stripe webhooks (local)** | `stripe listen --forward-to http://localhost:8080/api/stripe/webhook` | **Payment flow:** Checkout sends events to Stripe; Stripe must reach your app. Replace **8080** with **`PHP_PORT`** or use **8000** with `artisan serve`. Copy **`whsec_...`** into **`STRIPE_WEBHOOK_SECRET`** (same terminal output). |
+| **Config reload** | `cd backend && php artisan config:clear` | After any **`.env`** change (Stripe keys, `APP_URL`, mail, queue). |
+
+**Docker** (from repo root, same ideas):
+
+```bash
+docker compose exec kasbah_app php artisan queue:work
+docker compose exec kasbah_app php artisan schedule:work
+docker compose exec kasbah_app php artisan config:clear
+```
+
+`stripe listen` runs on the **host** (install [Stripe CLI](https://stripe.com/docs/stripe-cli)); forward to **host:port** that reaches Nginx (e.g. **8080**).
+
+**Quick Stripe sanity check** (with `stripe listen` running):
+
+```bash
+stripe trigger checkout.session.completed
+```
+
+**Skip the worker** only for quick tests: set **`QUEUE_CONNECTION=sync`** in **`backend/.env`** (not for production).
+
+Full Stripe flow (env, routes, Postman) is in **`docs/STRIPE.md`**.
+
+---
+
+## 5. Database
 
 ```bash
 php artisan migrate
@@ -85,7 +118,7 @@ docker compose exec kasbah_app php artisan migrate
 
 ---
 
-## 5. Queue worker (required for queued jobs)
+## 6. Queue worker (required for queued jobs)
 
 Many mails and listeners use the **queue**. If `QUEUE_CONNECTION` is `database` or `redis`, you **must** run a worker or jobs will stay pending.
 
@@ -118,7 +151,7 @@ php artisan queue:work --stop-when-empty
 
 ---
 
-## 6. Scheduler (cron / daily tasks)
+## 7. Scheduler (cron / daily tasks)
 
 Scheduled tasks are defined in **`backend/routes/console.php`** (e.g. **`bookings:send-reminders`** at **08:00** app timezone).
 
@@ -145,7 +178,7 @@ php artisan schedule:run
 
 ---
 
-## 7. Booking reminder emails
+## 8. Booking reminder emails
 
 **Normal rule:** command selects **CONFIRMED** bookings whose **tour `date` is tomorrow** (in `APP_TIMEZONE`), with **`reminder_sent_at` = null**.
 
@@ -166,7 +199,7 @@ Use the exact **`Y-m-d`** stored on the booking. Then ensure **`queue:work`** is
 
 ---
 
-## 8. Other useful Artisan commands
+## 9. Other useful Artisan commands
 
 | Command | Purpose |
 |--------|---------|
@@ -185,7 +218,7 @@ php artisan pail
 
 ---
 
-## 9. Automated tests (PHPUnit)
+## 10. Automated tests (PHPUnit)
 
 Uses **SQLite in-memory** per `phpunit.xml` (no Postgres needed for tests).
 
@@ -198,7 +231,7 @@ php artisan test
 
 ---
 
-## 10. Frontend (Angular)
+## 11. Frontend (Angular)
 
 ```bash
 cd frontend
@@ -211,18 +244,20 @@ With Docker, the **frontend** service usually runs this for you on port **4200**
 
 ---
 
-## 11. Typical “full manual test” session
+## 12. Typical “full manual test” session
 
-1. Start DB + app: **`docker compose up`** (or local `php artisan serve` + Postgres).
-2. **`php artisan migrate`** (once or after pull).
-3. Terminal A: **`php artisan queue:work`** (unless `QUEUE_CONNECTION=sync`).
-4. Terminal B: **`php artisan schedule:work`** (if testing **daily** reminder at 08:00; optional if you only use `bookings:send-reminders` manually).
-5. Call API (Postman / Angular): register, login, create tour, book, confirm…
-6. For **reminder**: create **CONFIRMED** booking with **`date` = tomorrow** (or use `--tour-date`), then **`php artisan bookings:send-reminders`**, watch **`storage/logs/laravel.log`** if `MAIL_MAILER=log`.
+1. **Start stack:** **`docker compose up`** (or Postgres + **`php artisan serve`**).
+2. **Migrate:** **`php artisan migrate`** (once or after pull).
+3. **`php artisan config:clear`** after changing **`backend/.env`**.
+4. **Terminal A — queue:** **`php artisan queue:work`** (unless **`QUEUE_CONNECTION=sync`**).
+5. **Terminal B — scheduler (optional):** **`php artisan schedule:work`** if you care about the **08:00** reminder; skip if you only run **`bookings:send-reminders`** by hand.
+6. **Terminal C — Stripe (payments):** **`stripe listen --forward-to http://localhost:8080/api/stripe/webhook`** — paste **`whsec_...`** into **`STRIPE_WEBHOOK_SECRET`**, then **`config:clear`** again.
+7. **API / Postman:** register, login, tours, bookings, **`POST /api/bookings/{id}/checkout`**, open returned **`url`** in a browser, pay with test card **`4242…`**, then guide **CONFIRM** (see **`docs/STRIPE.md`**).
+8. **Reminders:** **CONFIRMED** booking with **`date` = tomorrow** (or **`--tour-date`**), **`php artisan bookings:send-reminders`**, check **`storage/logs/laravel.log`** if **`MAIL_MAILER=log`**.
 
 ---
 
-## 12. Postman / API base URL
+## 13. Postman / API base URL
 
 - Docker + Nginx: `http://localhost:<PHP_PORT>/api` (e.g. **8080**).
 - `php artisan serve`: `http://127.0.0.1:8000/api`.
@@ -232,3 +267,11 @@ Send header: **`Authorization: Bearer <token>`** for protected routes.
 ---
 
 For UI/Stitch prompt and API field reference, see **`docs/stitch-kasbah-trek-prompt.md`**.
+
+---
+
+## 14. After a testing session (optional)
+
+- Stop **`queue:work`**, **`schedule:work`**, **`stripe listen`** with **Ctrl+C** in each terminal.
+- **`docker compose down`** if you used Docker and want to free ports.
+- No special “shutdown” is required for Laravel beyond stopping processes.
