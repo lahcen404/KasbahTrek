@@ -3,7 +3,7 @@
 
 Hello {{ $booking->traveler->fullname }},
 
-We have received your payment for **{{ $booking->tour->title }}**.
+We have received your payment for **{{ $booking->tour?->title ?? 'your tour' }}**.
 
 **Amount:** {{ number_format((float) $booking->total_price, 2) }} {{ strtoupper(config('stripe.currency')) }}
 

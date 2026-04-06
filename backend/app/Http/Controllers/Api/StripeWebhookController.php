@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\PaymentStatus;
-use App\Events\BookingPaymentReceived;
 use App\Http\Controllers\Controller;
+use App\Mail\BookingPaymentReceivedMail;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
 use UnexpectedValueException;
@@ -44,11 +46,13 @@ class StripeWebhookController extends Controller
                 return response()->json(['message' => 'Booking not found'], 404);
             }
 
-            if ($booking->payment_status === PaymentStatus::PAID) {
+            if (($session->payment_status ?? '') !== 'paid') {
                 return response()->json(['received' => true]);
             }
 
-            if (($session->payment_status ?? '') !== 'paid') {
+            if ($booking->payment_status === PaymentStatus::PAID) {
+                $this->sendPaymentReceiptIfNeeded($booking);
+
                 return response()->json(['received' => true]);
             }
 
@@ -58,9 +62,38 @@ class StripeWebhookController extends Controller
             ]);
 
             $booking->refresh()->load(['traveler', 'tour']);
-            event(new BookingPaymentReceived($booking));
+            $this->sendPaymentReceiptIfNeeded($booking);
         }
 
         return response()->json(['received' => true]);
+    }
+
+    /**
+     * Never throw: Stripe must get 2xx after we persist payment, or retries skip the email.
+     * Retries duplicate webhooks when receipt was not sent yet (see payment_receipt_sent_at).
+     */
+    private function sendPaymentReceiptIfNeeded(Booking $booking): void
+    {
+        if ($booking->payment_receipt_sent_at !== null) {
+            return;
+        }
+
+        if ($booking->payment_status !== PaymentStatus::PAID) {
+            return;
+        }
+
+        try {
+            $booking->loadMissing('traveler', 'tour');
+
+            Mail::to($booking->traveler->email)
+                ->send(new BookingPaymentReceivedMail($booking));
+
+            $booking->forceFill(['payment_receipt_sent_at' => now()])->save();
+        } catch (\Throwable $e) {
+            Log::error('Payment receipt email failed', [
+                'booking_id' => $booking->id,
+                'exception' => $e->getMessage(),
+            ]);
+        }
     }
 }
