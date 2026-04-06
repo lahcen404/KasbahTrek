@@ -1,5 +1,9 @@
 # Kasbah Trek — Testing & command reference
 
+**Architecture & feature decisions:** see **`docs/PROJECT-CONTEXT.md`**.  
+
+**Stripe (payments, env, webhook, code map):** see **`docs/STRIPE.md`**.
+
 Use this checklist whenever you want to **run** or **manually test** the full stack (API, queue, scheduler, emails, booking reminders).
 
 ---
