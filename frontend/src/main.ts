@@ -1,6 +1,17 @@
-import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
-import { AppComponent } from './app/app.component';
+import { createApp } from 'vue';
+import { createRouter, createWebHistory } from 'vue-router';
 
-bootstrapApplication(AppComponent, appConfig)
-  .catch((err) => console.error(err));
+import App from './App.vue';
+import HomePage from './pages/HomePage.vue';
+import NotFoundPage from './pages/NotFoundPage.vue';
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    { path: '/', component: HomePage },
+    { path: '/:pathMatch(.*)*', component: NotFoundPage },
+  ],
+});
+
+createApp(App).use(router).mount('#app');
+

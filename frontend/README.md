@@ -1,6 +1,6 @@
-# Kasbah Trek – Frontend (Angular 18)
+# Kasbah Trek – Frontend (Vue 3 + Vite)
 
-Angular v18 SPA for the Kasbah Trek tourism platform. Talks to the Laravel backend in `../backend`.
+Vue 3 SPA (Vite) for the Kasbah Trek tourism platform. Talks to the Laravel backend in `../backend`.
 
 ## Setup
 
@@ -13,11 +13,10 @@ npm install
 **Local (no Docker):**
 
 ```bash
-npm start
-# or: ng serve
+npm run dev
 ```
 
-App runs at `http://localhost:4200/`. API requests to `/api/*` are proxied to the Laravel backend (default `http://localhost:8080`). Adjust `proxy.conf.json` if your backend runs on another host/port.
+App runs at `http://localhost:5173/`. API requests to `/api/*` are proxied to the Laravel backend (default `http://localhost:8080`) via `vite.config.ts`.
 
 **With Docker:**
 
@@ -27,7 +26,7 @@ From the repo root:
 docker compose up frontend
 ```
 
-Angular runs in the `kasbah_frontend` container; app at `http://localhost:4200` (or `ANGULAR_PORT`). The container uses `proxy.docker.conf.json` so `/api` is forwarded to the Nginx (Laravel) service. Ensure backend and nginx are running (e.g. `docker compose up -d`).
+Vue runs in the `kasbah_frontend` container; app at `http://localhost:5173` (or `FRONTEND_PORT`). In Docker, `/api` is proxied to the `nginx` service.
 
 ## Build
 
@@ -35,16 +34,4 @@ Angular runs in the `kasbah_frontend` container; app at `http://localhost:4200` 
 npm run build
 ```
 
-Output is in `dist/kasbah-trek-frontend/`.
-
-## Tests
-
-```bash
-npm test
-```
-
-## Angular CLI
-
-- Generate component: `ng generate component <name>`
-- Generate service: `ng generate service <name>`
-- More: `ng help` or [Angular CLI](https://angular.dev/tools/cli)
+Output is in `dist/`.
