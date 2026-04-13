@@ -1,17 +1,3 @@
-<template>
-  <section class="hero">
-    <h1>Vue frontend is running</h1>
-    <p>
-      This is a fresh Vue 3 + Vite app in Docker. Next step: connect to your backend APIs
-      under <code>/api</code>.
-    </p>
-    <div class="actions">
-      <button class="btn" @click="ping">Ping API</button>
-    </div>
-    <pre v-if="result" class="output">{{ result }}</pre>
-  </section>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue';
 
@@ -26,6 +12,20 @@ async function ping() {
   }
 }
 </script>
+
+<template>
+  <section class="hero">
+    <h1>Vue frontend is running</h1>
+    <p>
+      This is a fresh Vue 3 + Vite app in Docker. Next step: connect to your backend APIs
+      under <code>/api</code>.
+    </p>
+    <div class="actions">
+      <button class="btn" @click="ping">Ping API</button>
+    </div>
+    <pre v-if="result" class="output">{{ result }}</pre>
+  </section>
+</template>
 
 <style scoped>
 .hero {
@@ -72,4 +72,3 @@ code {
   overflow: auto;
 }
 </style>
-
