@@ -17,3 +17,15 @@ export async function login(email: string, password: string): Promise<LoginUser>
   setAuthToken(data.token);
   return data.user;
 }
+
+export type RegisterRole = 'TRAVELER' | 'GUIDE';
+
+export async function registerAccount(payload: {
+  fullname: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  role: RegisterRole;
+}): Promise<void> {
+  await api.post('/register', payload);
+}

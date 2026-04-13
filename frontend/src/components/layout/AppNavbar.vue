@@ -17,11 +17,18 @@ const logoUrl = '/kasbah-trek.png';
         >
       </RouterLink>
       <div class="flex items-center gap-4 md:gap-8">
-        <RouterLink
-          :to="{ name: 'login' }"
-          class="md:hidden text-primary font-bold hover:text-orange-700 transition-colors text-sm font-semibold"
-          >Login</RouterLink
-        >
+        <div class="flex items-center gap-3 md:hidden">
+          <RouterLink
+            :to="{ name: 'register' }"
+            class="text-slate-600 font-semibold text-sm hover:text-orange-800 transition-colors"
+            >Register</RouterLink
+          >
+          <RouterLink
+            :to="{ name: 'login' }"
+            class="text-primary font-bold hover:text-orange-700 transition-colors text-sm font-semibold"
+            >Login</RouterLink
+          >
+        </div>
         <div class="hidden md:flex items-center gap-8">
           <RouterLink
             :to="{ name: 'home' }"
@@ -33,6 +40,11 @@ const logoUrl = '/kasbah-trek.png';
           >
           <a href="#" class="text-slate-600 hover:text-orange-800 transition-colors text-sm font-semibold"
             >About</a
+          >
+          <RouterLink
+            :to="{ name: 'register' }"
+            class="text-slate-600 font-semibold text-sm hover:text-orange-800 transition-colors"
+            >Register</RouterLink
           >
           <RouterLink
             :to="{ name: 'login' }"

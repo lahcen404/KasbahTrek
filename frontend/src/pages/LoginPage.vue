@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { AxiosError } from 'axios';
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { login } from '../api/auth';
 
 const router = useRouter();
+const route = useRoute();
 
 const heroImageUrl =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuBijAFJemguYAboRkJQRvY8fpXaXuCFmU3MU8vdtvuO6T0RLZUaU-NDuW90lFNSjNXJDjk3KkZClyH7jeQcB5DvdZIQdLMEQh29Urw641FMyl9pXX6cDD97jYGEkszILa1E54x9i-OaCpZigjY6RxNYz1_M7weLfK7IbjZxnTO6_caCWgTLS0Ml9Z9lhLyxDbH-N9hXSScgvo8HCR0S4KOf9biOa3O8DxkRyi03HkkJbm7lSnPA_RtTt_HuvXJJpEYCD5LLpCOBzrw';
@@ -71,6 +72,12 @@ async function onSubmit() {
           </h1>
           <p class="text-slate-500 font-body">
             Please enter your details to access your dashboard.
+          </p>
+          <p
+            v-if="route.query.registered"
+            class="rounded-2xl bg-secondary-container/80 px-4 py-3 text-sm font-medium text-on-secondary-container"
+          >
+            Account created. You can sign in now.
           </p>
         </header>
 
@@ -178,12 +185,12 @@ async function onSubmit() {
         <footer class="text-center">
           <p class="text-slate-500">
             Don't have an account?
-            <a
-              href="#"
+            <RouterLink
+              :to="{ name: 'register' }"
               class="ml-1 font-bold text-primary transition-colors hover:text-orange-700"
             >
               Register
-            </a>
+            </RouterLink>
           </p>
         </footer>
       </div>
