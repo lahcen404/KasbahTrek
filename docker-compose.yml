@@ -9,7 +9,7 @@ services:
       - "${FRONTEND_PORT:-5173}:5173"
     volumes:
       - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+      - ./kasbah-trek.png:/app/public/kasbah-trek.png:ro
     depends_on:
       - nginx
     environment:
@@ -68,4 +68,3 @@ services:
 
 volumes:
   pgtables:
-  frontend_node_modules:

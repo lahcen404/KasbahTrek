@@ -1,14 +1,93 @@
 <!doctype html>
-<html lang="en">
+<html class="light" lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>KasbahTrek</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              error: '#ba1a1a',
+              'surface-bright': '#fff8f3',
+              background: '#fff8f3',
+              'tertiary-fixed-dim': '#f2bf48',
+              'surface-dim': '#e4d8ca',
+              'tertiary-fixed': '#ffdf9e',
+              surface: '#fff8f3',
+              'surface-tint': '#974809',
+              'secondary-fixed': '#bceddc',
+              secondary: '#396759',
+              'on-background': '#201b12',
+              'surface-container-lowest': '#ffffff',
+              'inverse-primary': '#ffb68c',
+              'on-surface-variant': '#554339',
+              'on-secondary-container': '#3d6b5e',
+              'on-secondary-fixed-variant': '#204f42',
+              'surface-container-highest': '#ede1d2',
+              'on-tertiary-fixed': '#261a00',
+              'on-primary-container': '#fffbff',
+              tertiary: '#765700',
+              'surface-container-low': '#fef2e3',
+              'surface-container-high': '#f2e6d7',
+              'on-error-container': '#93000a',
+              'inverse-surface': '#363026',
+              'outline-variant': '#dbc1b4',
+              'primary-fixed-dim': '#ffb68c',
+              'on-secondary': '#ffffff',
+              'surface-container': '#f8ecdd',
+              'secondary-fixed-dim': '#a0d1c0',
+              'on-primary': '#ffffff',
+              'tertiary-container': '#946f00',
+              'primary-container': '#b35d21',
+              'error-container': '#ffdad6',
+              'on-error': '#ffffff',
+              'surface-variant': '#ede1d2',
+              'on-tertiary-fixed-variant': '#5b4300',
+              'primary-fixed': '#ffdbc9',
+              'on-surface': '#201b12',
+              'secondary-container': '#b9ead9',
+              'on-tertiary': '#ffffff',
+              'on-primary-fixed': '#321200',
+              outline: '#887368',
+              'on-tertiary-container': '#fffbff',
+              'on-primary-fixed-variant': '#753400',
+              'inverse-on-surface': '#fbefe0',
+              primary: '#944606',
+              'on-secondary-fixed': '#002019',
+            },
+            borderRadius: {
+              DEFAULT: '1rem',
+              lg: '2rem',
+              xl: '3rem',
+              full: '9999px',
+            },
+            fontFamily: {
+              headline: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+              body: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+              label: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
   </head>
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
-

@@ -1,3 +1,6 @@
+<script setup lang="ts">
+</script>
+
 <template>
   <div class="box">
     <h2>Page not found</h2>
@@ -20,4 +23,3 @@
   text-decoration: underline;
 }
 </style>
-
