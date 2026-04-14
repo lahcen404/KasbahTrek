@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 import { getCategories, type Category } from '../api/categories';
 import { getTours, tourImageUrl, type Tour } from '../api/tours';
 
@@ -13,6 +14,7 @@ const categories = ref<Category[]>([]);
 const selectedCategoryIds = ref<number[]>([]);
 const selectedDuration = ref<'DAY' | '2_4' | '5_PLUS' | null>(null);
 const selectedDifficulty = ref<'EASY' | 'MEDIUM' | 'HARD' | null>(null);
+const mobileFiltersOpen = ref(false);
 
 // derived values
 const hasTours = computed(() => tours.value.length > 0);
@@ -242,13 +244,135 @@ onMounted(async () => {
           <button
             type="button"
             class="mb-8 flex w-full items-center justify-between rounded-2xl bg-surface-container-high px-6 py-4 font-bold text-primary"
+            :aria-expanded="mobileFiltersOpen ? 'true' : 'false'"
+            aria-controls="mobile-filter-panel"
+            @click="mobileFiltersOpen = !mobileFiltersOpen"
           >
             <span class="flex items-center gap-2">
               <span class="material-symbols-outlined">tune</span>
               Filter Adventures
             </span>
-            <span class="material-symbols-outlined">expand_more</span>
+            <span class="material-symbols-outlined">{{ mobileFiltersOpen ? 'expand_less' : 'expand_more' }}</span>
           </button>
+
+          <div
+            id="mobile-filter-panel"
+            v-show="mobileFiltersOpen"
+            class="mb-8 space-y-8 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5"
+          >
+            <div>
+              <h3 class="mb-4 font-headline text-lg font-semibold text-primary">Category</h3>
+              <div class="space-y-3">
+                <label
+                  v-for="cat in categories"
+                  :key="`mobile-cat-${cat.id}`"
+                  class="group flex cursor-pointer items-center gap-3"
+                >
+                  <input
+                    v-model="selectedCategoryIds"
+                    :value="cat.id"
+                    type="checkbox"
+                    class="h-5 w-5 rounded border-outline-variant/30 bg-surface-container-high text-primary transition-all focus:ring-primary/20"
+                  />
+                  <span class="text-on-surface-variant transition-colors group-hover:text-primary">
+                    {{ cat.name }}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="mb-4 font-headline text-lg font-semibold text-primary">Duration</h3>
+              <div class="space-y-3">
+                <label class="group flex cursor-pointer items-center gap-3">
+                  <input
+                    v-model="selectedDuration"
+                    value="DAY"
+                    type="radio"
+                    name="mobile-duration"
+                    class="h-5 w-5 border-outline-variant/30 bg-surface-container-high text-primary transition-all focus:ring-primary/20"
+                  />
+                  <span class="text-on-surface-variant transition-colors group-hover:text-primary"
+                    >Day Trips</span
+                  >
+                </label>
+                <label class="group flex cursor-pointer items-center gap-3">
+                  <input
+                    v-model="selectedDuration"
+                    value="2_4"
+                    type="radio"
+                    name="mobile-duration"
+                    class="h-5 w-5 border-outline-variant/30 bg-surface-container-high text-primary transition-all focus:ring-primary/20"
+                  />
+                  <span class="text-on-surface-variant transition-colors group-hover:text-primary"
+                    >2-4 Days</span
+                  >
+                </label>
+                <label class="group flex cursor-pointer items-center gap-3">
+                  <input
+                    v-model="selectedDuration"
+                    value="5_PLUS"
+                    type="radio"
+                    name="mobile-duration"
+                    class="h-5 w-5 border-outline-variant/30 bg-surface-container-high text-primary transition-all focus:ring-primary/20"
+                  />
+                  <span class="text-on-surface-variant transition-colors group-hover:text-primary"
+                    >5+ Days</span
+                  >
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="mb-4 font-headline text-lg font-semibold text-primary">Difficulty</h3>
+              <div class="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  :class="
+                    'rounded-full border border-outline-variant/20 px-3 py-2 text-xs font-semibold transition-all ' +
+                    (selectedDifficulty === 'EASY'
+                      ? 'bg-primary text-white'
+                      : 'text-on-surface-variant hover:bg-primary hover:text-white')
+                  "
+                  @click="selectedDifficulty = selectedDifficulty === 'EASY' ? null : 'EASY'"
+                >
+                  Easy
+                </button>
+                <button
+                  type="button"
+                  :class="
+                    'rounded-full border border-outline-variant/20 px-3 py-2 text-xs font-semibold transition-all ' +
+                    (selectedDifficulty === 'MEDIUM'
+                      ? 'bg-primary text-white'
+                      : 'text-on-surface-variant hover:bg-primary hover:text-white')
+                  "
+                  @click="selectedDifficulty = selectedDifficulty === 'MEDIUM' ? null : 'MEDIUM'"
+                >
+                  Medium
+                </button>
+                <button
+                  type="button"
+                  :class="
+                    'rounded-full border border-outline-variant/20 px-3 py-2 text-xs font-semibold transition-all ' +
+                    (selectedDifficulty === 'HARD'
+                      ? 'bg-primary text-white'
+                      : 'text-on-surface-variant hover:bg-primary hover:text-white')
+                  "
+                  @click="selectedDifficulty = selectedDifficulty === 'HARD' ? null : 'HARD'"
+                >
+                  Hard
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="w-full rounded-full border border-outline-variant/30 bg-surface px-4 py-3 text-center font-bold text-slate-700"
+              @click="mobileFiltersOpen = false"
+            >
+              Apply Filters
+            </button>
+          </div>
         </div>
 
         <!-- Cards grid -->
@@ -320,7 +444,9 @@ onMounted(async () => {
                 <h3
                   class="mb-3 font-headline text-2xl font-bold text-on-surface transition-colors group-hover:text-primary"
                 >
-                  {{ tour.title }}
+                  <RouterLink :to="{ name: 'tour-details', params: { id: tour.id } }">
+                    {{ tour.title }}
+                  </RouterLink>
                 </h3>
 
                 <div class="mb-6 flex items-center gap-4 text-sm text-on-surface-variant">
@@ -339,12 +465,12 @@ onMounted(async () => {
                     <span class="block text-xs text-on-surface-variant">Starting from</span>
                     <span class="font-headline text-2xl font-bold text-primary">{{ priceLabel(tour) }}</span>
                   </div>
-                  <button
-                    type="button"
+                  <RouterLink
+                    :to="{ name: 'tour-details', params: { id: tour.id } }"
                     class="rounded-full bg-primary px-6 py-3 font-semibold text-on-primary transition-all hover:brightness-110"
                   >
                     Book Now
-                  </button>
+                  </RouterLink>
                 </div>
               </div>
             </div>

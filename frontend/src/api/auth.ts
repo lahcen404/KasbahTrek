@@ -1,4 +1,4 @@
-import { api, setAuthToken } from './client';
+import { api, clearAuthToken, setAuthToken } from './client';
 
 export type LoginUser = {
   fullname: string;
@@ -28,4 +28,12 @@ export async function registerAccount(payload: {
   role: RegisterRole;
 }): Promise<void> {
   await api.post('/register', payload);
+}
+
+export async function logout(): Promise<void> {
+  try {
+    await api.post('/logout');
+  } finally {
+    clearAuthToken();
+  }
 }

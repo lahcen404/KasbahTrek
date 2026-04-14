@@ -18,9 +18,10 @@ class StoreTourRequest extends FormRequest
             'description' => 'required|string',
             'location' => 'required|string',
             'price' => 'required|numeric',
-            'difficulty' => 'required|string',
+            'difficulty' => 'required|in:EASY,MEDIUM,HARD',
             'max_spots' => 'required|integer|min:1',
             'duration_hours' => 'nullable|integer|min:1|max:720',
+            'date' => 'nullable|date|after_or_equal:today',
             'category_id' => 'nullable|exists:categories,id',
         ];
     }
