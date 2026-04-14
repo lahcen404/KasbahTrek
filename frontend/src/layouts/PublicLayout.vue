@@ -10,6 +10,6 @@ import AppNavbar from '../components/layout/AppNavbar.vue';
     <main class="flex-1 flex flex-col pt-[72px]">
       <RouterView />
     </main>
-    <AppFooter />
+    <AppFooter class="mt-auto" />
   </div>
 </template>

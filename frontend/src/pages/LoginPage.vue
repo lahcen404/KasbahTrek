@@ -43,7 +43,7 @@ async function onSubmit() {
 
 <template>
   <!-- Split layout: matches reference min-h-[calc(100vh-64px)] -->
-  <div class="flex w-full min-h-[calc(100vh-64px)] flex-1 flex-col md:flex-row">
+  <div class="flex w-full min-h-[calc(100vh-72px)] flex-1 flex-col md:flex-row">
     <!-- Visual side (desktop only) -->
     <div class="relative hidden overflow-hidden md:block md:w-1/2">
       <img
@@ -64,7 +64,7 @@ async function onSubmit() {
     </div>
 
     <!-- Form side -->
-    <div class="flex w-full items-center justify-center bg-surface p-8 md:w-1/2">
+    <div class="flex w-full items-center justify-center bg-surface p-6 sm:p-8 md:w-1/2">
       <div class="w-full max-w-md space-y-10">
         <header class="space-y-3">
           <h1 class="text-4xl font-bold tracking-tight text-on-surface">

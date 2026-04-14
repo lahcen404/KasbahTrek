@@ -60,7 +60,7 @@ async function onSubmit() {
 
 <template>
   <div
-    class="relative z-0 flex min-h-[calc(100vh-4rem)] flex-1 flex-col items-center justify-center overflow-hidden bg-background px-6 py-12 font-body text-on-background selection:bg-primary-container selection:text-on-primary-container zellige-pattern"
+    class="relative z-0 flex min-h-[calc(100vh-72px)] flex-1 flex-col items-center justify-center overflow-hidden bg-background px-6 py-12 font-body text-on-background selection:bg-primary-container selection:text-on-primary-container zellige-pattern"
   >
     <div class="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
     <div
