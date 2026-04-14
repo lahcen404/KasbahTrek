@@ -7,6 +7,7 @@ const logoUrl = '/kasbah-trek.png';
 
 const route = useRoute();
 const isHome = computed(() => route.name === 'home');
+const isTours = computed(() => route.name === 'tours');
 
 const mobileMenuOpen = ref(false);
 
@@ -40,14 +41,23 @@ watch(
       </RouterLink>
 
       <div class="hidden items-center gap-8 md:flex">
-        <a
-          href="#"
+        <RouterLink
+          :to="{ name: 'home' }"
           :class="
             isHome
               ? 'border-b-2 border-orange-800 pb-1 font-bold text-orange-800 dark:border-orange-400 dark:text-orange-400'
               : 'text-slate-600 transition-colors hover:text-orange-800 dark:text-slate-400'
           "
-          >Tours</a
+          >Home</RouterLink
+        >
+        <RouterLink
+          :to="{ name: 'tours' }"
+          :class="
+            isTours
+              ? 'border-b-2 border-orange-800 pb-1 font-bold text-orange-800 dark:border-orange-400 dark:text-orange-400'
+              : 'text-slate-600 transition-colors hover:text-orange-800 dark:text-slate-400'
+          "
+          >Tours</RouterLink
         >
         <a
           class="text-slate-600 transition-colors hover:text-orange-800 dark:text-slate-400"
@@ -100,8 +110,15 @@ watch(
       <div class="mx-auto w-full max-w-7xl px-6 pb-4">
         <div class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4 shadow-sm">
           <div class="flex flex-col gap-3">
-            <a class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low" href="#"
-              >Tours</a
+            <RouterLink
+              :to="{ name: 'home' }"
+              class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low"
+              >Home</RouterLink
+            >
+            <RouterLink
+              :to="{ name: 'tours' }"
+              class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low"
+              >Tours</RouterLink
             >
             <a class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low" href="#"
               >How it works</a

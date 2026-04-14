@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\TripReportController as AdminTripReportContro
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\PayPalWebhookController;
 use App\Http\Controllers\Api\ReviewController;
@@ -29,6 +30,9 @@ Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handle']);
 Route::get('/tours', [TourController::class, 'index']);
 Route::get('/tours/{id}', [TourController::class, 'show']);
 Route::get('/tours/{id}/reviews', [ReviewController::class, 'tourReviews']);
+
+// categories (public)
+Route::get('/categories', [CategoryController::class, 'index']);
 
 // PROTEEECTED routes
 Route::middleware(['auth.custom'])->group(function () {
