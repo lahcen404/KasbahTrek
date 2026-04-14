@@ -98,7 +98,16 @@ class TourRepository implements TourRepositoryInterface
 
     public function findById(int $id)
     {
-        return Tour::with(['guide', 'images', 'reviews'])->findOrFail($id);
+        return Tour::with([
+            'guide:id,fullname,email,is_verified',
+            'images:id,tour_id,path',
+            'category:id,name,description',
+            'reviews:id,tour_id,traveler_id,rating,comment,created_at',
+            'reviews.traveler:id,fullname',
+        ])
+            ->withAvg('reviews as rating_avg', 'rating')
+            ->withCount('reviews')
+            ->findOrFail($id);
     }
 
     public function create(array $data)

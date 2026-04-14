@@ -18,6 +18,15 @@ export type TourGuide = {
   is_verified?: boolean;
 };
 
+export type TourReview = {
+  id: number;
+  rating?: number | null;
+  comment?: string | null;
+  created_at?: string | null;
+  traveler?: { id: number; fullname?: string; name?: string } | null;
+  user?: { id: number; fullname?: string; name?: string } | null;
+};
+
 export type Tour = {
   id: number;
   title: string;
@@ -25,12 +34,16 @@ export type Tour = {
   location?: string | null;
   price: number;
   duration_hours?: number | null;
+  date?: string | null;
   difficulty?: string | null;
   category_id?: number | null;
   images?: TourImage[];
   category?: TourCategory | string | null;
   category_name?: string | null;
   guide?: TourGuide | null;
+  reviews?: TourReview[];
+  rating_avg?: number | null;
+  reviews_count?: number;
 };
 
 type Paginated<T> = {
@@ -65,6 +78,11 @@ function unwrapArrayOrPaginator<T>(payload: unknown): T[] {
 export async function getTours(params: GetToursParams = {}): Promise<Tour[]> {
   const res = await api.get('/tours', { params });
   return unwrapArrayOrPaginator<Tour>(res.data);
+}
+
+export async function getTourById(id: number | string): Promise<Tour> {
+  const res = await api.get(`/tours/${id}`);
+  return res.data as Tour;
 }
 
 export function tourImageUrl(imagePath?: string | null): string | null {

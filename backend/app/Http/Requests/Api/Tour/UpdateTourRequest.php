@@ -18,9 +18,10 @@ class UpdateTourRequest extends FormRequest
             'description' => 'sometimes|string',
             'location' => 'sometimes|string',
             'price' => 'sometimes|numeric',
-            'difficulty' => 'sometimes|string',
+            'difficulty' => 'sometimes|in:EASY,MEDIUM,HARD',
             'max_spots' => 'sometimes|integer|min:1',
             'duration_hours' => 'sometimes|nullable|integer|min:1|max:720',
+            'date' => 'sometimes|nullable|date|after_or_equal:today',
             'category_id' => 'sometimes|nullable|exists:categories,id',
         ];
     }

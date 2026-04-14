@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 import { getCategories, type Category } from '../api/categories';
 import { getTours, tourImageUrl, type Tour } from '../api/tours';
 
@@ -320,7 +321,9 @@ onMounted(async () => {
                 <h3
                   class="mb-3 font-headline text-2xl font-bold text-on-surface transition-colors group-hover:text-primary"
                 >
-                  {{ tour.title }}
+                  <RouterLink :to="{ name: 'tour-details', params: { id: tour.id } }">
+                    {{ tour.title }}
+                  </RouterLink>
                 </h3>
 
                 <div class="mb-6 flex items-center gap-4 text-sm text-on-surface-variant">
@@ -339,12 +342,12 @@ onMounted(async () => {
                     <span class="block text-xs text-on-surface-variant">Starting from</span>
                     <span class="font-headline text-2xl font-bold text-primary">{{ priceLabel(tour) }}</span>
                   </div>
-                  <button
-                    type="button"
+                  <RouterLink
+                    :to="{ name: 'tour-details', params: { id: tour.id } }"
                     class="rounded-full bg-primary px-6 py-3 font-semibold text-on-primary transition-all hover:brightness-110"
                   >
                     Book Now
-                  </button>
+                  </RouterLink>
                 </div>
               </div>
             </div>
