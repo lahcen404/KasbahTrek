@@ -1,6 +1,65 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
 import AppFooter from '../components/layout/AppFooter.vue';
 import AppNavbar from '../components/layout/AppNavbar.vue';
+import { getTours, tourImageUrl, type Tour } from '../api/tours';
+
+const loadingTours = ref(true);
+const toursError = ref<string | null>(null);
+const tours = ref<Tour[]>([]);
+
+const fallbackTourImages = [
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuAEjgHrX2YGJv6DhogNrwgXcBGqxZPOKUojJGB_NkvzSrhNpYOBHziN7Fxom3nkEVnx7v6JpCg0EHvWPF8cO-4qRyR_6WfjAG3m6R-_gH9rOCQ5V86lbCKuJL0oThw2ajEPfc1TbXFBAwRYI32Pulf-T3iek5JSRRTD5xNwY1YPixzpcRY9nNvZRQp2DdS6HsQqwkVPZkxYZg-uHmBn0hoO6Pj-z81Snw1-bAs5t9i_DOGESVzO_rhWrJBsg6KUHsV1NwWEk7MeofM',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuAUqjpyv-NeyfVLlkmf6URJ4HBvV5ZKnMyoAVHZfSQyIGi2fBvXxOwLBTkrABi-QWWYgeI0gTMEIdPituGTO9vx2ULCRwODn3wDhxoK8xWlW50ieNCIZRizDXXbJSeL0Y3p2DGC1PsOFHlMktCQVfgCP0G44tRVntcahS7F3HAFbCC_3VjrqVvGOPQSV_OTtC4X770HV-JBvEAoQO2xaXPkxpytT2LvZ8aknFBkwtYG32z8PkwXArh-mlKGuiRvYmppHSJs_ERaD3Q',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuA6yYb0SlUsf3td3GjBVGdE43FlQUjU7ECw-lKYfx8FN9ykEAii3YWVTdFLMR3yTt90UQz8U0LeA7zZTjfoDQCYSbcWcjSKGmnGi89P2IqjCmH6-8U1Zo1h4kqqFv920L3GXOYVjscq3YCrTZkPr8wePM96il-5NtyDZG9sPAgt8DMrHvYFFDkpShVl2vHzZ7A_L2ngkXZ_edH9PWrdbJmnxjMrvQjxebBuybFhgbSkYFcicrP6Hp1jmUwBd4VPPjE8B4Q93rUyshM',
+];
+
+const featuredTours = computed(() => tours.value.slice(0, 3));
+
+function formatPrice(value: number): string {
+  return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value);
+}
+
+function tourCardImage(tour: Tour, idx: number): string {
+  const first = tour.images?.[0]?.path;
+  return tourImageUrl(first) ?? fallbackTourImages[idx % fallbackTourImages.length];
+}
+
+function tourCategoryLabel(tour: Tour): string | null {
+  const category =
+    typeof tour.category === 'string'
+      ? tour.category
+      : tour.category?.name ?? tour.category_name ?? null;
+  if (category) return String(category);
+  if (typeof tour.category_id === 'number') return `Category #${tour.category_id}`;
+  return 'Uncategorized';
+}
+
+function tourDifficultyLabel(tour: Tour): string | null {
+  const diff = tour.difficulty ? String(tour.difficulty) : null;
+  return diff;
+}
+
+function tourMetaLine(tour: Tour): string {
+  if (typeof tour.duration_hours === 'number' && tour.duration_hours > 0) {
+    const days = Math.max(1, Math.round(tour.duration_hours / 24));
+    return `${days} Day${days > 1 ? 's' : ''} • ${tour.location ?? 'Morocco'}`;
+  }
+  return `${tour.location ?? 'Morocco'} • Curated journey`;
+}
+
+onMounted(async () => {
+  loadingTours.value = true;
+  toursError.value = null;
+  try {
+    tours.value = await getTours({ per_page: 9 });
+  } catch {
+    toursError.value = 'Could not load tours right now.';
+    tours.value = [];
+  } finally {
+    loadingTours.value = false;
+  }
+});
 </script>
 
 <template>
@@ -33,47 +92,27 @@ import AppNavbar from '../components/layout/AppNavbar.vue';
             Experience authentic adventure in high-end desert camps and traditional villages.
             Curated journeys for the modern nomad.
           </p>
-          <div
-            class="flex max-w-3xl flex-col items-stretch gap-2 rounded-full bg-surface-bright p-2 shadow-2xl md:flex-row md:items-center md:p-3"
-          >
-            <div class="flex-1 px-6 py-2">
-              <label class="mb-1 block text-[10px] font-bold uppercase tracking-widest text-outline"
-                >Location</label
-              >
-              <input
-                class="w-full border-none bg-transparent p-0 font-semibold text-on-surface placeholder:text-outline-variant focus:ring-0"
-                placeholder="Where to?"
-                type="text"
-              />
-            </div>
-            <div class="hidden h-10 w-px bg-outline-variant/30 md:block" />
-            <div class="flex-1 px-6 py-2">
-              <label class="mb-1 block text-[10px] font-bold uppercase tracking-widest text-outline"
-                >Date</label
-              >
-              <input
-                class="w-full border-none bg-transparent p-0 font-semibold text-on-surface placeholder:text-outline-variant focus:ring-0"
-                placeholder="When?"
-                type="text"
-              />
-            </div>
-            <div class="hidden h-10 w-px bg-outline-variant/30 md:block" />
-            <div class="flex-1 px-6 py-2">
-              <label class="mb-1 block text-[10px] font-bold uppercase tracking-widest text-outline"
-                >Guests</label
-              >
-              <input
-                class="w-full border-none bg-transparent p-0 font-semibold text-on-surface placeholder:text-outline-variant focus:ring-0"
-                placeholder="How many?"
-                type="text"
-              />
-            </div>
+          <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <button
               type="button"
-              class="flex items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#C46A2D] to-[#E3B23C] px-10 py-4 font-bold text-white transition-all hover:scale-105 hover:shadow-xl"
+              class="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#C46A2D] to-[#E3B23C] px-10 py-4 font-bold text-white transition-all hover:scale-105 hover:shadow-xl active:scale-95"
             >
-              <span class="material-symbols-outlined">search</span>
-              Explore
+              <span class="material-symbols-outlined">explore</span>
+              Browse Tours
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 px-10 py-4 font-bold text-white backdrop-blur transition-all hover:bg-white/15 active:scale-95"
+            >
+              <span class="material-symbols-outlined">groups</span>
+              Meet Guides
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 px-10 py-4 font-bold text-white backdrop-blur transition-all hover:bg-white/15 active:scale-95"
+            >
+              <span class="material-symbols-outlined">play_circle</span>
+              How It Works
             </button>
           </div>
         </div>
@@ -97,23 +136,62 @@ import AppNavbar from '../components/layout/AppNavbar.vue';
             View All Tours <span class="material-symbols-outlined">arrow_forward</span>
           </button>
         </div>
-        <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div v-if="toursError" class="rounded-2xl bg-error-container/70 px-6 py-4 text-sm font-medium text-error">
+          {{ toursError }}
+        </div>
+
+        <div v-else class="grid grid-cols-1 gap-8 md:grid-cols-3">
+          <!-- Skeletons -->
           <div
+            v-if="loadingTours"
+            v-for="i in 3"
+            :key="i"
+            class="overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm"
+          >
+            <div class="h-80 animate-pulse bg-surface-container-high" />
+            <div class="space-y-4 p-8">
+              <div class="flex items-center justify-between">
+                <div class="h-6 w-28 animate-pulse rounded-full bg-surface-container-high" />
+                <div class="h-6 w-14 animate-pulse rounded-full bg-surface-container-high" />
+              </div>
+              <div class="h-7 w-2/3 animate-pulse rounded-lg bg-surface-container-high" />
+              <div class="h-5 w-1/2 animate-pulse rounded-lg bg-surface-container-high" />
+              <div class="h-6 w-full animate-pulse rounded-lg bg-surface-container-high" />
+            </div>
+          </div>
+
+          <!-- Real tours -->
+          <div
+            v-else
+            v-for="(tour, idx) in featuredTours"
+            :key="tour.id"
             class="group relative overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm transition-all duration-500 hover:shadow-xl"
           >
             <div class="h-80 overflow-hidden">
               <img
-                alt=""
+                :src="tourCardImage(tour, idx)"
+                :alt="tour.title"
                 class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEjgHrX2YGJv6DhogNrwgXcBGqxZPOKUojJGB_NkvzSrhNpYOBHziN7Fxom3nkEVnx7v6JpCg0EHvWPF8cO-4qRyR_6WfjAG3m6R-_gH9rOCQ5V86lbCKuJL0oThw2ajEPfc1TbXFBAwRYI32Pulf-T3iek5JSRRTD5xNwY1YPixzpcRY9nNvZRQp2DdS6HsQqwkVPZkxYZg-uHmBn0hoO6Pj-z81Snw1-bAs5t9i_DOGESVzO_rhWrJBsg6KUHsV1NwWEk7MeofM"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <div class="p-8">
               <div class="mb-4 flex items-start justify-between">
-                <span
-                  class="rounded-full bg-secondary/10 px-3 py-1 text-xs font-bold uppercase text-secondary"
-                  >Culture &amp; Stay</span
-                >
+                <div class="flex flex-wrap items-center gap-2">
+                  <span
+                    v-if="tourCategoryLabel(tour)"
+                    class="rounded-full bg-secondary/10 px-3 py-1 text-xs font-bold uppercase text-secondary"
+                  >
+                    {{ tourCategoryLabel(tour) }}
+                  </span>
+                  <span
+                    v-if="tourDifficultyLabel(tour)"
+                    class="rounded-full bg-tertiary/10 px-3 py-1 text-xs font-bold uppercase text-tertiary"
+                  >
+                    {{ tourDifficultyLabel(tour) }}
+                  </span>
+                </div>
                 <div class="flex items-center gap-1 text-tertiary">
                   <span
                     class="material-symbols-outlined text-sm"
@@ -123,89 +201,13 @@ import AppNavbar from '../components/layout/AppNavbar.vue';
                   <span class="text-sm font-bold">4.9</span>
                 </div>
               </div>
-              <h3 class="mb-2 text-2xl font-bold text-orange-950">Marrakech Soul</h3>
-              <p class="mb-6 text-sm text-outline">4 Days • Riads &amp; Souks</p>
+              <h3 class="mb-2 text-2xl font-bold text-orange-950">{{ tour.title }}</h3>
+              <p class="mb-6 text-sm text-outline">
+                {{ tourMetaLine(tour) }}
+              </p>
               <div class="flex items-center justify-between">
                 <p class="font-semibold text-on-surface">
-                  From <span class="text-xl font-bold text-primary">$850</span>
-                </p>
-                <span
-                  class="material-symbols-outlined text-outline transition-colors group-hover:text-primary"
-                  >favorite</span
-                >
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="group relative overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm transition-all duration-500 hover:shadow-xl"
-          >
-            <div class="h-80 overflow-hidden">
-              <img
-                alt=""
-                class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUqjpyv-NeyfVLlkmf6URJ4HBvV5ZKnMyoAVHZfSQyIGi2fBvXxOwLBTkrABi-QWWYgeI0gTMEIdPituGTO9vx2ULCRwODn3wDhxoK8xWlW50ieNCIZRizDXXbJSeL0Y3p2DGC1PsOFHlMktCQVfgCP0G44tRVntcahS7F3HAFbCC_3VjrqVvGOPQSV_OTtC4X770HV-JBvEAoQO2xaXPkxpytT2LvZ8aknFBkwtYG32z8PkwXArh-mlKGuiRvYmppHSJs_ERaD3Q"
-              />
-            </div>
-            <div class="p-8">
-              <div class="mb-4 flex items-start justify-between">
-                <span
-                  class="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase text-primary"
-                  >Adventure</span
-                >
-                <div class="flex items-center gap-1 text-tertiary">
-                  <span
-                    class="material-symbols-outlined text-sm"
-                    style="font-variation-settings: 'FILL' 1"
-                    >star</span
-                  >
-                  <span class="text-sm font-bold">5.0</span>
-                </div>
-              </div>
-              <h3 class="mb-2 text-2xl font-bold text-orange-950">Sahara Star Gazing</h3>
-              <p class="mb-6 text-sm text-outline">3 Days • Luxury Desert Camp</p>
-              <div class="flex items-center justify-between">
-                <p class="font-semibold text-on-surface">
-                  From <span class="text-xl font-bold text-primary">$1,200</span>
-                </p>
-                <span
-                  class="material-symbols-outlined text-outline transition-colors group-hover:text-primary"
-                  >favorite</span
-                >
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="group relative overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm transition-all duration-500 hover:shadow-xl"
-          >
-            <div class="h-80 overflow-hidden">
-              <img
-                alt=""
-                class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6yYb0SlUsf3td3GjBVGdE43FlQUjU7ECw-lKYfx8FN9ykEAii3YWVTdFLMR3yTt90UQz8U0LeA7zZTjfoDQCYSbcWcjSKGmnGi89P2IqjCmH6-8U1Zo1h4kqqFv920L3GXOYVjscq3YCrTZkPr8wePM96il-5NtyDZG9sPAgt8DMrHvYFFDkpShVl2vHzZ7A_L2ngkXZ_edH9PWrdbJmnxjMrvQjxebBuybFhgbSkYFcicrP6Hp1jmUwBd4VPPjE8B4Q93rUyshM"
-              />
-            </div>
-            <div class="p-8">
-              <div class="mb-4 flex items-start justify-between">
-                <span
-                  class="rounded-full bg-secondary/10 px-3 py-1 text-xs font-bold uppercase text-secondary"
-                  >Mountain Trek</span
-                >
-                <div class="flex items-center gap-1 text-tertiary">
-                  <span
-                    class="material-symbols-outlined text-sm"
-                    style="font-variation-settings: 'FILL' 1"
-                    >star</span
-                  >
-                  <span class="text-sm font-bold">4.8</span>
-                </div>
-              </div>
-              <h3 class="mb-2 text-2xl font-bold text-orange-950">Berber Trails</h3>
-              <p class="mb-6 text-sm text-outline">5 Days • Village Trekking</p>
-              <div class="flex items-center justify-between">
-                <p class="font-semibold text-on-surface">
-                  From <span class="text-xl font-bold text-primary">$950</span>
+                  From <span class="text-xl font-bold text-primary">${{ formatPrice(tour.price) }}</span>
                 </p>
                 <span
                   class="material-symbols-outlined text-outline transition-colors group-hover:text-primary"
