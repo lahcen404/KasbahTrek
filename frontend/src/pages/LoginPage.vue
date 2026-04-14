@@ -22,7 +22,11 @@ async function onSubmit() {
   loading.value = true;
   try {
     await login(email.value.trim(), password.value);
-    await router.push('/');
+    const redirectTarget =
+      typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/')
+        ? route.query.redirect
+        : '/';
+    await router.push(redirectTarget);
   } catch (e) {
     const err = e as AxiosError<{
       message?: string;

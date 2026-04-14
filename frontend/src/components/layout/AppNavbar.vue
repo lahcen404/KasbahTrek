@@ -1,15 +1,29 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { RouterLink, useRoute } from 'vue-router';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { getAuthToken } from '../../api/client';
+import { logout } from '../../api/auth';
 
 // logo url
 const logoUrl = '/kasbah-trek.png';
 
 const route = useRoute();
+const router = useRouter();
 const isHome = computed(() => route.name === 'home');
 const isTours = computed(() => route.name === 'tours');
 
 const mobileMenuOpen = ref(false);
+
+function hasValidToken(): boolean {
+  const token = getAuthToken();
+  return typeof token === 'string' && token.trim() !== '' && token !== 'null' && token !== 'undefined';
+}
+
+async function handleLogout(): Promise<void> {
+  await logout();
+  mobileMenuOpen.value = false;
+  await router.push({ name: 'login' });
+}
 
 watch(
   () => route.fullPath,
@@ -86,18 +100,28 @@ watch(
             {{ mobileMenuOpen ? 'close' : 'menu' }}
           </span>
         </button>
-        <RouterLink
-          :to="{ name: 'login' }"
-          class="hidden px-4 py-2 font-semibold text-slate-600 transition-colors hover:text-orange-800 md:block"
+        <template v-if="!hasValidToken()">
+          <RouterLink
+            :to="{ name: 'login' }"
+            class="hidden px-4 py-2 font-semibold text-slate-600 transition-colors hover:text-orange-800 md:block"
+          >
+            Login
+          </RouterLink>
+          <RouterLink
+            :to="{ name: 'register' }"
+            class="hidden rounded-full bg-primary px-8 py-3 font-bold text-on-primary transition-all hover:brightness-110 hover:shadow-lg active:scale-95 md:inline-flex"
+          >
+            Register
+          </RouterLink>
+        </template>
+        <button
+          v-else
+          type="button"
+          class="hidden rounded-full border border-outline-variant/30 bg-surface px-6 py-3 font-bold text-slate-700 transition-colors hover:bg-surface-container-low active:scale-95 md:inline-flex"
+          @click="handleLogout"
         >
-          Login
-        </RouterLink>
-        <RouterLink
-          :to="{ name: 'register' }"
-          class="hidden rounded-full bg-primary px-8 py-3 font-bold text-on-primary transition-all hover:brightness-110 hover:shadow-lg active:scale-95 md:inline-flex"
-        >
-          Register
-        </RouterLink>
+          Logout
+        </button>
       </div>
     </div>
 
@@ -131,7 +155,7 @@ watch(
             >
           </div>
 
-          <div class="mt-4 grid grid-cols-2 gap-3">
+          <div class="mt-4 grid grid-cols-2 gap-3" v-if="!hasValidToken()">
             <RouterLink
               :to="{ name: 'login' }"
               class="rounded-full border border-outline-variant/30 bg-surface px-4 py-3 text-center font-bold text-slate-700 transition-colors hover:bg-surface-container-low active:scale-95"
@@ -144,6 +168,15 @@ watch(
             >
               Register
             </RouterLink>
+          </div>
+          <div class="mt-4" v-else>
+            <button
+              type="button"
+              class="w-full rounded-full border border-outline-variant/30 bg-surface px-4 py-3 text-center font-bold text-slate-700 transition-colors hover:bg-surface-container-low active:scale-95"
+              @click="handleLogout"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>

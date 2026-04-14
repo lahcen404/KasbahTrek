@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import type { AxiosError } from 'axios';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getAuthToken } from '../api/client';
+import { api, clearAuthToken, getAuthToken } from '../api/client';
 import { getTourById, tourImageUrl, type Tour } from '../api/tours';
 
 const route = useRoute();
@@ -84,14 +85,31 @@ function fmtMoney(value: number): string {
   return `$${rounded}`;
 }
 
-function handleReserveClick(): void {
+async function handleReserveClick(): Promise<void> {
   const token = getAuthToken();
-  if (!token) {
+  const hasLocalToken = typeof token === 'string' && token.trim() !== '';
+
+  if (!hasLocalToken || token === 'null' || token === 'undefined') {
     void router.push({
       name: 'login',
       query: { redirect: route.fullPath },
     });
     return;
+  }
+
+  try {
+    // Validate token with backend so stale localStorage values don't block redirect.
+    await api.get('/my-bookings');
+  } catch (e) {
+    const err = e as AxiosError;
+    if (err.response?.status === 401) {
+      clearAuthToken();
+      void router.push({
+        name: 'login',
+        query: { redirect: route.fullPath },
+      });
+      return;
+    }
   }
 }
 
