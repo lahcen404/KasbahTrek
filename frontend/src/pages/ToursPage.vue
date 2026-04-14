@@ -1,14 +1,50 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { getCategories, type Category } from '../api/categories';
 import { getTours, tourImageUrl, type Tour } from '../api/tours';
 
 // states
 const loading = ref(true);
 const error = ref<string | null>(null);
 const tours = ref<Tour[]>([]);
+const categories = ref<Category[]>([]);
+
+// filter state (basic)
+const selectedCategoryIds = ref<number[]>([]);
+const selectedDuration = ref<'DAY' | '2_4' | '5_PLUS' | null>(null);
+const selectedDifficulty = ref<'EASY' | 'MEDIUM' | 'HARD' | null>(null);
 
 // derived values
 const hasTours = computed(() => tours.value.length > 0);
+
+const filteredTours = computed(() => {
+  let list = tours.value;
+
+  // category filter (multiple selection)
+  if (selectedCategoryIds.value.length > 0) {
+    const ids = new Set(selectedCategoryIds.value);
+    list = list.filter((t) => typeof t.category_id === 'number' && ids.has(t.category_id));
+  }
+
+  // difficulty filter
+  if (selectedDifficulty.value) {
+    list = list.filter((t) => (t.difficulty ?? '').toUpperCase() === selectedDifficulty.value);
+  }
+
+  // duration filter 
+  if (selectedDuration.value) {
+    list = list.filter((t) => {
+      const hours = t.duration_hours ?? null;
+      if (typeof hours !== 'number') return false;
+      const days = hours / 24;
+      if (selectedDuration.value === 'DAY') return days <= 1.25;
+      if (selectedDuration.value === '2_4') return days > 1.25 && days < 4.75;
+      return days >= 4.75;
+    });
+  }
+
+  return list;
+});
 
 function categoryLabel(tour: Tour): string {
   const category =
@@ -64,6 +100,7 @@ onMounted(async () => {
   loading.value = true;
   error.value = null;
   try {
+    categories.value = await getCategories();
     tours.value = await getTours({ per_page: 30 });
   } catch {
     error.value = 'Could not load tours. Please refresh.';
@@ -90,36 +127,26 @@ onMounted(async () => {
       <div class="flex flex-col gap-12 md:flex-row">
         <!-- Sidebar filters (UI only for now) -->
         <aside class="hidden w-72 shrink-0 md:block">
-          <div class="sticky top-32 space-y-10">
+          <div
+            class="sticky top-32 space-y-10 rounded-3xl border border-outline-variant/20 bg-surface/60 p-6 backdrop-blur-md"
+          >
             <div>
               <h3 class="mb-6 font-headline text-xl font-semibold text-primary">Category</h3>
               <div class="space-y-4">
-                <label class="group flex cursor-pointer items-center gap-3">
+                <label
+                  v-for="cat in categories"
+                  :key="cat.id"
+                  class="group flex cursor-pointer items-center gap-3"
+                >
                   <input
+                    v-model="selectedCategoryIds"
+                    :value="cat.id"
                     type="checkbox"
                     class="h-5 w-5 rounded border-outline-variant/30 bg-surface-container-high text-primary transition-all focus:ring-primary/20"
                   />
-                  <span class="text-on-surface-variant transition-colors group-hover:text-primary"
-                    >Desert Expeditions</span
-                  >
-                </label>
-                <label class="group flex cursor-pointer items-center gap-3">
-                  <input
-                    type="checkbox"
-                    class="h-5 w-5 rounded border-outline-variant/30 bg-surface-container-high text-primary transition-all focus:ring-primary/20"
-                  />
-                  <span class="text-on-surface-variant transition-colors group-hover:text-primary"
-                    >Mountain Treks</span
-                  >
-                </label>
-                <label class="group flex cursor-pointer items-center gap-3">
-                  <input
-                    type="checkbox"
-                    class="h-5 w-5 rounded border-outline-variant/30 bg-surface-container-high text-primary transition-all focus:ring-primary/20"
-                  />
-                  <span class="text-on-surface-variant transition-colors group-hover:text-primary"
-                    >Village Immersions</span
-                  >
+                  <span class="text-on-surface-variant transition-colors group-hover:text-primary">
+                    {{ cat.name }}
+                  </span>
                 </label>
               </div>
             </div>
@@ -129,6 +156,8 @@ onMounted(async () => {
               <div class="space-y-4">
                 <label class="group flex cursor-pointer items-center gap-3">
                   <input
+                    v-model="selectedDuration"
+                    value="DAY"
                     type="radio"
                     name="duration"
                     class="h-5 w-5 border-outline-variant/30 bg-surface-container-high text-primary transition-all focus:ring-primary/20"
@@ -139,6 +168,8 @@ onMounted(async () => {
                 </label>
                 <label class="group flex cursor-pointer items-center gap-3">
                   <input
+                    v-model="selectedDuration"
+                    value="2_4"
                     type="radio"
                     name="duration"
                     class="h-5 w-5 border-outline-variant/30 bg-surface-container-high text-primary transition-all focus:ring-primary/20"
@@ -149,6 +180,8 @@ onMounted(async () => {
                 </label>
                 <label class="group flex cursor-pointer items-center gap-3">
                   <input
+                    v-model="selectedDuration"
+                    value="5_PLUS"
                     type="radio"
                     name="duration"
                     class="h-5 w-5 border-outline-variant/30 bg-surface-container-high text-primary transition-all focus:ring-primary/20"
@@ -165,27 +198,39 @@ onMounted(async () => {
               <div class="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  class="rounded-full border border-outline-variant/20 px-4 py-2 text-sm font-semibold text-on-surface-variant transition-all hover:bg-primary hover:text-white"
+                  :class="
+                    'rounded-full border border-outline-variant/20 px-4 py-2 text-sm font-semibold transition-all ' +
+                    (selectedDifficulty === 'EASY'
+                      ? 'bg-primary text-white'
+                      : 'text-on-surface-variant hover:bg-primary hover:text-white')
+                  "
+                  @click="selectedDifficulty = selectedDifficulty === 'EASY' ? null : 'EASY'"
                 >
                   Easy
                 </button>
                 <button
                   type="button"
-                  class="rounded-full border border-outline-variant/20 px-4 py-2 text-sm font-semibold text-on-surface-variant transition-all hover:bg-primary hover:text-white"
+                  :class="
+                    'rounded-full border border-outline-variant/20 px-4 py-2 text-sm font-semibold transition-all ' +
+                    (selectedDifficulty === 'MEDIUM'
+                      ? 'bg-primary text-white'
+                      : 'text-on-surface-variant hover:bg-primary hover:text-white')
+                  "
+                  @click="selectedDifficulty = selectedDifficulty === 'MEDIUM' ? null : 'MEDIUM'"
                 >
-                  Moderate
+                  Medium
                 </button>
                 <button
                   type="button"
-                  class="rounded-full border border-outline-variant/20 px-4 py-2 text-sm font-semibold text-on-surface-variant transition-all hover:bg-primary hover:text-white"
+                  :class="
+                    'rounded-full border border-outline-variant/20 px-4 py-2 text-sm font-semibold transition-all ' +
+                    (selectedDifficulty === 'HARD'
+                      ? 'bg-primary text-white'
+                      : 'text-on-surface-variant hover:bg-primary hover:text-white')
+                  "
+                  @click="selectedDifficulty = selectedDifficulty === 'HARD' ? null : 'HARD'"
                 >
-                  Challenging
-                </button>
-                <button
-                  type="button"
-                  class="rounded-full border border-outline-variant/20 px-4 py-2 text-sm font-semibold text-on-surface-variant transition-all hover:bg-primary hover:text-white"
-                >
-                  Epic
+                  Hard
                 </button>
               </div>
             </div>
@@ -235,7 +280,7 @@ onMounted(async () => {
             <!-- Real tours -->
             <div
               v-else
-              v-for="(tour, idx) in tours"
+              v-for="(tour, idx) in filteredTours"
               :key="tour.id"
               class="group flex flex-col overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm transition-all duration-500 hover:shadow-xl"
             >

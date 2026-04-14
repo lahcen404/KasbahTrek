@@ -129,12 +129,12 @@ onMounted(async () => {
             >
             <h2 class="font-headline text-4xl font-bold text-orange-900">Featured Expeditions</h2>
           </div>
-          <button
-            type="button"
+          <RouterLink
+            :to="{ name: 'tours' }"
             class="hidden items-center gap-2 font-bold text-primary transition-all hover:gap-4 md:flex"
           >
             View All Tours <span class="material-symbols-outlined">arrow_forward</span>
-          </button>
+          </RouterLink>
         </div>
         <div v-if="toursError" class="rounded-2xl bg-error-container/70 px-6 py-4 text-sm font-medium text-error">
           {{ toursError }}
