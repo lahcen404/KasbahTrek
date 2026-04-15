@@ -153,7 +153,11 @@ class TourRepository implements TourRepositoryInterface
 
     public function deleteImage(int $tourId, int $imageId): bool
     {
-        $image = Image::where('tour_id', $tourId)->where('id', $imageId)->firstOrFail();
+        $image = Image::where('tour_id', $tourId)->where('id', $imageId)->first();
+
+        if (! $image) {
+            return false;
+        }
 
         if (! empty($image->path)) {
             Storage::disk('public')->delete($image->path);

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getAuthToken } from '../api/client';
 import { getCategories } from '../api/categories';
@@ -89,6 +89,9 @@ function applyTourToForm(tour: GuideTour): void {
 async function loadTour(): Promise<void> {
   loadingTour.value = true;
   error.value = null;
+  selectedImages.value = [];
+  removedImageIds.value = [];
+  existingImages.value = [];
 
   try {
     const tours = await getGuideTours();
@@ -184,6 +187,13 @@ onMounted(async () => {
   await Promise.all([loadCategories(), loadTour()]);
 });
 
+watch(
+  () => route.params.id,
+  () => {
+    void loadTour();
+  },
+);
+
 function onImagesChange(event: Event): void {
   const input = event.target as HTMLInputElement;
   selectedImages.value = Array.from(input.files ?? []);
@@ -199,9 +209,6 @@ function removeExistingImage(imageId: number): void {
   success.value = 'Image will be removed after you click Update tour.';
 }
 
-function isDeletingImage(): boolean {
-  return false;
-}
 </script>
 
 <template>
