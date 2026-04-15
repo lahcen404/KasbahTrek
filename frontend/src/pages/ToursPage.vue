@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import { getCategories } from '../api/categories';
 import { getTours, tourImageUrl } from '../api/tours';
@@ -11,6 +11,9 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const tours = ref<Tour[]>([]);
 const categories = ref<Category[]>([]);
+const searchQuery = ref('');
+const searchDebounceMs = 350;
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // filter state (basic)
 const selectedCategoryIds = ref<number[]>([]);
@@ -20,7 +23,8 @@ const mobileFiltersOpen = ref(false);
 const currentImageIndexByTour = ref<Record<number, number>>({});
 
 // derived values
-const hasTours = computed(() => tours.value.length > 0);
+const hasTours = computed(() => filteredTours.value.length > 0);
+const hasActiveSearch = computed(() => searchQuery.value.trim().length > 0);
 
 const filteredTours = computed(() => {
   let list = tours.value;
@@ -50,6 +54,23 @@ const filteredTours = computed(() => {
 
   return list;
 });
+
+async function loadTours(): Promise<void> {
+  loading.value = true;
+  error.value = null;
+
+  try {
+    tours.value = await getTours({
+      per_page: 30,
+      search: searchQuery.value.trim() || undefined,
+    });
+  } catch {
+    error.value = 'Could not load tours. Please refresh.';
+    tours.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
 
 function categoryLabel(tour: Tour): string {
   const category =
@@ -141,7 +162,7 @@ onMounted(async () => {
   error.value = null;
   try {
     categories.value = await getCategories();
-    tours.value = await getTours({ per_page: 30 });
+    await loadTours();
   } catch {
     error.value = 'Could not load tours. Please refresh.';
     tours.value = [];
@@ -149,6 +170,26 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+watch(searchQuery, () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+
+  searchTimeout = setTimeout(() => {
+    void loadTours();
+  }, searchDebounceMs);
+});
+
+onUnmounted(() => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+});
+
+function clearSearch(): void {
+  searchQuery.value = '';
+}
 </script>
 
 <template>
@@ -162,6 +203,31 @@ onMounted(async () => {
           Discover the soul of North Africa through hand-picked journeys. From the whispering dunes of
           the Sahara to the rugged peaks of the Atlas, our treks are designed for the modern nomad.
         </p>
+        <div class="mt-8 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
+          <div class="mb-3 flex items-center justify-between">
+            <label for="tour-search" class="text-sm font-semibold text-primary">Search Tours</label>
+            <span class="text-xs text-on-surface-variant">{{ filteredTours.length }} shown</span>
+          </div>
+
+          <div class="relative">
+            <input
+              id="tour-search"
+              v-model="searchQuery"
+              type="search"
+              placeholder="Search tours"
+              class="w-full rounded-xl border border-outline-variant/30 bg-surface px-4 py-3 pr-20 text-sm text-on-surface outline-none transition focus:border-primary"
+            />
+
+            <button
+              v-if="hasActiveSearch"
+              type="button"
+              class="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg border border-outline-variant/30 px-3 py-1.5 text-xs font-medium text-on-surface-variant transition hover:text-primary"
+              @click="clearSearch"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
       </header>
 
       <div class="flex flex-col gap-12 md:flex-row">
