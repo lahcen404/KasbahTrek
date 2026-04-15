@@ -6,7 +6,7 @@ import AppNavbar from './components/layout/AppNavbar.vue';
 
 const route = useRoute();
 
-const shelllessRoutes = new Set(['home', 'guide-dashboard', 'guide-tour-create']);
+const shelllessRoutes = new Set(['home']);
 const showShell = computed(() => !shelllessRoutes.has(String(route.name)));
 </script>
 

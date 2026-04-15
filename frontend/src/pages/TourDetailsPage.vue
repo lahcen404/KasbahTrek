@@ -3,6 +3,7 @@ import type { AxiosError } from 'axios';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api, clearAuthToken, getAuthToken } from '../api/client';
+import { getStoredUserRole } from '../api/auth';
 import { getTourById, tourImageUrl, type Tour } from '../api/tours';
 
 const route = useRoute();
@@ -12,6 +13,7 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const tour = ref<Tour | null>(null);
 const selectedDate = ref('');
+const reserveError = ref<string | null>(null);
 
 // Booking sidebar UI
 const travelers = ref(2);
@@ -81,13 +83,24 @@ const formattedTourDate = computed(() => {
 });
 
 function fmtMoney(value: number): string {
-  const rounded = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value);
-  return `$${rounded}`;
+  return new Intl.NumberFormat('en-MA', {
+    style: 'currency',
+    currency: 'MAD',
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 async function handleReserveClick(): Promise<void> {
+  reserveError.value = null;
+
   const token = getAuthToken();
   const hasLocalToken = typeof token === 'string' && token.trim() !== '';
+  const role = getStoredUserRole()?.toUpperCase();
+
+  if (role === 'GUIDE') {
+    reserveError.value = 'Guide accounts cannot book tours. Please use a traveler account.';
+    return;
+  }
 
   if (!hasLocalToken || token === 'null' || token === 'undefined') {
     void router.push({
@@ -110,6 +123,13 @@ async function handleReserveClick(): Promise<void> {
       });
       return;
     }
+
+    if (err.response?.status === 403) {
+      reserveError.value = 'Only travelers can book tours.';
+      return;
+    }
+
+    reserveError.value = 'Could not continue booking right now. Please try again.';
   }
 }
 
@@ -385,6 +405,13 @@ onMounted(async () => {
               >
                 Reserve My Spot
               </button>
+
+              <p
+                v-if="reserveError"
+                class="rounded-xl bg-error-container/70 px-4 py-3 text-sm font-semibold text-error"
+              >
+                {{ reserveError }}
+              </p>
 
             </div>
           </aside>

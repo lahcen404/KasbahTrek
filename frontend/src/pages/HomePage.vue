@@ -17,7 +17,11 @@ const fallbackTourImages = [
 const featuredTours = computed(() => tours.value.slice(0, 3));
 
 function formatPrice(value: number): string {
-  return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat('en-MA', {
+    style: 'currency',
+    currency: 'MAD',
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 function tourCardImage(tour: Tour, idx: number): string {
@@ -207,7 +211,7 @@ onMounted(async () => {
               </p>
               <div class="flex items-center justify-between">
                 <p class="font-semibold text-on-surface">
-                  From <span class="text-xl font-bold text-primary">${{ formatPrice(tour.price) }}</span>
+                  From <span class="text-xl font-bold text-primary">{{ formatPrice(tour.price) }}</span>
                 </p>
                 <span
                   class="material-symbols-outlined text-outline transition-colors group-hover:text-primary"
