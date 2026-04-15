@@ -4,6 +4,7 @@ import HomePage from '../pages/HomePage.vue';
 import LoginPage from '../pages/LoginPage.vue';
 import RegisterPage from '../pages/RegisterPage.vue';
 import NotFoundPage from '../pages/NotFoundPage.vue';
+import GuideDashboardPage from '../pages/GuideDashboardPage.vue';
 import ToursPage from '../pages/ToursPage.vue';
 import TourDetailsPage from '../pages/TourDetailsPage.vue';
 
@@ -11,6 +12,7 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'home', component: HomePage },
+    { path: '/guide/dashboard', name: 'guide-dashboard', component: GuideDashboardPage },
     { path: '/tours', name: 'tours', component: ToursPage },
     { path: '/tours/:id', name: 'tour-details', component: TourDetailsPage },
     { path: '/login', name: 'login', component: LoginPage },

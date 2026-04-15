@@ -49,7 +49,15 @@ class BookingRepository implements BookingRepositoryInterface
 
     public function getByGuide(int $guideId)
     {
-        return Booking::where('guide_id', $guideId)->with(['tour', 'traveler'])->get();
+        return Booking::where('guide_id', $guideId)
+            ->with([
+                'traveler:id,fullname,email',
+                'tour:id,title,description,location,price,guide_id',
+                'tour.images:id,tour_id,path',
+                'tour.guide:id,fullname,is_verified',
+            ])
+            ->latest('id')
+            ->get();
     }
 
     public function updateStatus(int $id, string $status)

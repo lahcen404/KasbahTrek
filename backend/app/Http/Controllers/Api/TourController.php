@@ -48,6 +48,13 @@ class TourController extends Controller
         return response()->json($tour);
     }
 
+    public function guideTours()
+    {
+        $tours = $this->tourRepository->getByGuide(auth()->id());
+
+        return response()->json($tours);
+    }
+
     public function update(UpdateTourRequest $request, $id)
     {
         $tour = $this->tourRepository->findById($id);

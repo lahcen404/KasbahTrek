@@ -132,7 +132,14 @@ class TourRepository implements TourRepositoryInterface
 
     public function getByGuide(int $guideId)
     {
-        return Tour::where('guide_id', $guideId)->with('images')->get();
+        return Tour::where('guide_id', $guideId)
+            ->with([
+                'images:id,tour_id,path',
+                'guide:id,fullname,is_verified',
+            ])
+            ->withCount('bookings')
+            ->latest('id')
+            ->get();
     }
 
     public function addImage(int $tourId, string $path)
