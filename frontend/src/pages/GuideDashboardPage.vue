@@ -378,18 +378,6 @@ onMounted(() => {
 
           <!-- Right Sidebar Content -->
           <div class="space-y-8">
-            <div class="bg-surface-container-low border-2 border-dashed border-outline-variant/30 rounded-3xl p-8 flex flex-col items-center text-center">
-              <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6">
-                <span class="material-symbols-outlined text-3xl text-primary">cloud_upload</span>
-              </div>
-              <h4 class="text-xl font-headline font-bold text-on-surface mb-2">Upload Tour Photos</h4>
-              <p class="text-sm text-on-surface-variant mb-6">Drag and drop high-quality adventure photos to attract more travelers.</p>
-              <button class="bg-surface-container-lowest border border-outline-variant/20 px-6 py-3 rounded-xl font-bold text-sm text-on-surface hover:bg-white transition-all shadow-sm" type="button">
-                Browse Files
-              </button>
-              <p class="text-[10px] text-on-surface-variant/60 mt-4 uppercase tracking-widest font-bold">JPG, PNG up to 10MB</p>
-            </div>
-
             <div class="bg-secondary text-white rounded-3xl p-8 relative overflow-hidden">
               <div class="relative z-10">
                 <h4 class="text-xl font-headline font-bold mb-4">Guide Tip</h4>
@@ -397,27 +385,6 @@ onMounted(() => {
                 <button class="text-sm font-bold underline underline-offset-4" type="button">Learn More</button>
               </div>
               <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-            </div>
-
-            <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-sm">
-              <h4 class="text-lg font-headline font-bold text-on-surface mb-6">Monthly Forecast</h4>
-              <div class="space-y-4">
-                <div class="flex items-end gap-2 h-32 px-2">
-                  <div class="flex-1 bg-secondary/20 rounded-t-lg h-[40%]"></div>
-                  <div class="flex-1 bg-secondary/20 rounded-t-lg h-[65%]"></div>
-                  <div class="flex-1 bg-secondary/20 rounded-t-lg h-[50%]"></div>
-                  <div class="flex-1 bg-secondary rounded-t-lg h-[90%]"></div>
-                  <div class="flex-1 bg-secondary/20 rounded-t-lg h-[70%]"></div>
-                </div>
-                <div class="flex justify-between text-[10px] font-bold text-on-surface-variant px-2">
-                  <span>AUG</span>
-                  <span>SEP</span>
-                  <span>OCT</span>
-                  <span>NOV</span>
-                  <span>DEC</span>
-                </div>
-              </div>
-              <p class="text-xs text-on-surface-variant mt-6 text-center italic">Projecting 15% growth in Q4 based on current trends.</p>
             </div>
           </div>
         </div>
