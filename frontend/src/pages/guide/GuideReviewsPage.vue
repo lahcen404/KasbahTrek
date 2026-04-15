@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { getAuthToken } from '../api/client';
-import { getGuideReviews } from '../api/guide';
-import type { GuideReview } from '../types/guide';
+import { getAuthToken } from '../../api/client';
+import { getGuideReviews } from '../../api/guide';
+import type { GuideReview } from '../../types/guide';
 
 const router = useRouter();
 

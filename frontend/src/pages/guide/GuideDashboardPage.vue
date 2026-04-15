@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { getAuthToken } from '../api/client';
+import { getAuthToken } from '../../api/client';
 import {
   deleteGuideTour,
   getGuideBookings,
   getGuideTours,
   updateGuideBookingStatus,
-} from '../api/guide';
-import { tourImageUrl } from '../api/tours';
-import type { GuideBooking, GuideBookingStatus, GuideTour } from '../types/guide';
+} from '../../api/guide';
+import { tourImageUrl } from '../../api/tours';
+import type { GuideBooking, GuideBookingStatus, GuideTour } from '../../types/guide';
 
 const router = useRouter();
 
