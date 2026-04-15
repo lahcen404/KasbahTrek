@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getAuthToken } from '../api/client';
 import {
+  deleteGuideTour,
   getGuideBookings,
   getGuideTours,
   updateGuideBookingStatus,
@@ -17,6 +18,7 @@ const error = ref<string | null>(null);
 const bookings = ref<GuideBooking[]>([]);
 const guideTours = ref<GuideTour[]>([]);
 const actingBookingId = ref<number | null>(null);
+const deletingTourId = ref<number | null>(null);
 const currentImageIndexByTour = ref<Record<number, number>>({});
 
 const fallbackTourImage =
@@ -189,6 +191,25 @@ async function setBookingStatus(bookingId: number, status: Exclude<GuideBookingS
     error.value = err.response?.data?.message ?? 'Could not update booking status.';
   } finally {
     actingBookingId.value = null;
+  }
+}
+
+async function deleteTour(tourId: number, tourTitle?: string): Promise<void> {
+  const label = tourTitle?.trim() || 'this tour';
+  const confirmed = window.confirm(`Delete ${label}? This action cannot be undone.`);
+  if (!confirmed) return;
+
+  deletingTourId.value = tourId;
+  error.value = null;
+
+  try {
+    await deleteGuideTour(tourId);
+    guideTours.value = guideTours.value.filter((tour) => tour.id !== tourId);
+  } catch (e) {
+    const err = e as { response?: { data?: { message?: string } } };
+    error.value = err.response?.data?.message ?? 'Could not delete tour.';
+  } finally {
+    deletingTourId.value = null;
   }
 }
 
@@ -373,8 +394,13 @@ onMounted(() => {
                       >
                         <span class="material-symbols-outlined text-xl">edit</span>
                       </button>
-                      <button class="p-2 bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-colors" type="button">
-                        <span class="material-symbols-outlined text-xl">visibility</span>
+                      <button
+                        class="p-2 bg-surface-container-high rounded-full hover:bg-error/10 transition-colors disabled:opacity-50"
+                        type="button"
+                        :disabled="deletingTourId === tour.id"
+                        @click="deleteTour(tour.id, tour.title)"
+                      >
+                        <span class="material-symbols-outlined text-xl">{{ deletingTourId === tour.id ? 'hourglass_top' : 'delete' }}</span>
                       </button>
                     </div>
                   </div>

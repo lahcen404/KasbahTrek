@@ -84,3 +84,7 @@ export async function uploadGuideTourImages(tourId: number, images: File[]): Pro
 export async function deleteGuideTourImage(tourId: number, imageId: number): Promise<void> {
   await api.delete(`/tours/${tourId}/images/${imageId}`);
 }
+
+export async function deleteGuideTour(tourId: number): Promise<void> {
+  await api.delete(`/tours/${tourId}`);
+}
