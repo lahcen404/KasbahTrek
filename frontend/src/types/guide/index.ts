@@ -35,6 +35,22 @@ export type GuideBooking = {
   tour?: GuideTour | null;
 };
 
+export type GuideReview = {
+  id: number;
+  rating?: number | null;
+  comment?: string | null;
+  created_at?: string | null;
+  traveler?: {
+    id: number;
+    fullname?: string;
+  } | null;
+  tour?: {
+    id: number;
+    title?: string;
+    guide_id?: number;
+  } | null;
+};
+
 export type UpdateBookingStatusResponse = {
   message?: string;
   booking?: GuideBooking;

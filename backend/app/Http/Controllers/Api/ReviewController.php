@@ -20,6 +20,13 @@ class ReviewController extends Controller
         return response()->json($items);
     }
 
+    public function guideReviews()
+    {
+        $items = $this->reviews->getGuideReviews((int) Auth::id());
+
+        return response()->json($items);
+    }
+
     public function tourReviews(int $id)
     {
         $items = $this->reviews->getTourReviews($id);

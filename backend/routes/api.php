@@ -44,6 +44,7 @@ Route::middleware(['auth.custom'])->group(function () {
 Route::middleware(['auth.custom', 'role:GUIDE'])->group(function () {
 
     Route::get('/guide/tours', [TourController::class, 'guideTours']);
+    Route::get('/guide/reviews', [ReviewController::class, 'guideReviews']);
     Route::post('/tours', [TourController::class, 'store']);
     Route::put('/tours/{id}', [TourController::class, 'update']);
     Route::delete('/tours/{id}', [TourController::class, 'destroy']);
