@@ -254,7 +254,7 @@ onMounted(() => {
             <span class="material-symbols-outlined">photo_library</span>
             <span class="font-bold text-sm">Photos</span>
           </button>
-          <button class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-orange-50 rounded-full transition-all" type="button">
+          <button class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-orange-50 rounded-full transition-all" type="button" @click="router.push({ name: 'guide-verification' })">
             <span class="material-symbols-outlined">verified_user</span>
             <span class="font-bold text-sm">Verification</span>
           </button>

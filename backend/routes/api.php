@@ -36,6 +36,7 @@ Route::get('/categories', [CategoryController::class, 'index']);
 
 // PROTEEECTED routes
 Route::middleware(['auth.custom'])->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
 });

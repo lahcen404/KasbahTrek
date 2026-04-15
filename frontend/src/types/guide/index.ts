@@ -75,3 +75,16 @@ export type UpdateGuideTourResponse = {
   message?: string;
   tour?: GuideTour;
 };
+
+export type SubmitGuideVerificationResponse = {
+  status?: string;
+  message?: string;
+  data?: {
+    id?: number;
+    guide_id?: number;
+    file_url?: string;
+    status?: string;
+    created_at?: string;
+    updated_at?: string;
+  };
+};

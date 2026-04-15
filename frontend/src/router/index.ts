@@ -7,6 +7,7 @@ import NotFoundPage from '../pages/NotFoundPage.vue';
 import GuideDashboardPage from '../pages/GuideDashboardPage.vue';
 import GuideTourCreatePage from '../pages/GuideTourCreatePage.vue';
 import GuideTourEditPage from '../pages/GuideTourEditPage.vue';
+import GuideVerificationPage from '../pages/GuideVerificationPage.vue';
 import ToursPage from '../pages/ToursPage.vue';
 import TourDetailsPage from '../pages/TourDetailsPage.vue';
 
@@ -17,6 +18,7 @@ const router = createRouter({
     { path: '/guide/dashboard', name: 'guide-dashboard', component: GuideDashboardPage },
     { path: '/guide/tours/create', name: 'guide-tour-create', component: GuideTourCreatePage },
     { path: '/guide/tours/:id/edit', name: 'guide-tour-edit', component: GuideTourEditPage },
+    { path: '/guide/verification', name: 'guide-verification', component: GuideVerificationPage },
     { path: '/tours', name: 'tours', component: ToursPage },
     { path: '/tours/:id', name: 'tour-details', component: TourDetailsPage },
     { path: '/login', name: 'login', component: LoginPage },
