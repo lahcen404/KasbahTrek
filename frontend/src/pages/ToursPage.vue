@@ -15,6 +15,7 @@ const selectedCategoryIds = ref<number[]>([]);
 const selectedDuration = ref<'DAY' | '2_4' | '5_PLUS' | null>(null);
 const selectedDifficulty = ref<'EASY' | 'MEDIUM' | 'HARD' | null>(null);
 const mobileFiltersOpen = ref(false);
+const currentImageIndexByTour = ref<Record<number, number>>({});
 
 // derived values
 const hasTours = computed(() => tours.value.length > 0);
@@ -76,8 +77,11 @@ function locationLabel(tour: Tour): string {
 
 function priceLabel(tour: Tour): string {
   const value = typeof tour.price === 'number' ? tour.price : 0;
-  const rounded = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value);
-  return `$${rounded}`;
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'MAD',
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 function heroImageFor(idx: number): string {
@@ -92,9 +96,41 @@ function heroImageFor(idx: number): string {
   return fallbacks[idx % fallbacks.length];
 }
 
-function cardImage(tour: Tour, idx: number): string {
-  const first = tour.images?.[0]?.path;
-  return tourImageUrl(first) ?? heroImageFor(idx);
+function cardImageUrls(tour: Tour, idx: number): string[] {
+  const urls = (tour.images ?? [])
+    .map((image) => tourImageUrl(image.path))
+    .filter((value): value is string => Boolean(value));
+
+  if (urls.length === 0) {
+    urls.push(heroImageFor(idx));
+  }
+
+  return urls;
+}
+
+function currentCardImage(tour: Tour, idx: number): string {
+  const urls = cardImageUrls(tour, idx);
+  const current = currentImageIndexByTour.value[tour.id] ?? 0;
+  const safeIndex = current >= 0 && current < urls.length ? current : 0;
+  return urls[safeIndex];
+}
+
+function goNextImage(tour: Tour, idx: number): void {
+  const urls = cardImageUrls(tour, idx);
+  if (urls.length <= 1) return;
+  const current = currentImageIndexByTour.value[tour.id] ?? 0;
+  currentImageIndexByTour.value[tour.id] = (current + 1) % urls.length;
+}
+
+function goPrevImage(tour: Tour, idx: number): void {
+  const urls = cardImageUrls(tour, idx);
+  if (urls.length <= 1) return;
+  const current = currentImageIndexByTour.value[tour.id] ?? 0;
+  currentImageIndexByTour.value[tour.id] = (current - 1 + urls.length) % urls.length;
+}
+
+function goToImage(tour: Tour, imageIndex: number): void {
+  currentImageIndexByTour.value[tour.id] = imageIndex;
 }
 
 // fetch data
@@ -384,7 +420,7 @@ onMounted(async () => {
             {{ error }}
           </div>
 
-          <div v-else class="grid grid-cols-1 gap-8 lg:grid-cols-2 xl:grid-cols-3">
+          <div v-else class="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <!-- Loading skeletons -->
             <div
               v-if="loading"
@@ -410,12 +446,41 @@ onMounted(async () => {
             >
               <div class="relative h-72 overflow-hidden">
                 <img
-                  :src="cardImage(tour, idx)"
+                  :src="currentCardImage(tour, idx)"
                   :alt="tour.title"
                   class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   loading="lazy"
                   decoding="async"
                 />
+
+                <template v-if="cardImageUrls(tour, idx).length > 1">
+                  <button
+                    type="button"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/85 p-1.5 text-slate-700 shadow hover:bg-white"
+                    @click="goPrevImage(tour, idx)"
+                  >
+                    <span class="material-symbols-outlined text-lg">chevron_left</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/85 p-1.5 text-slate-700 shadow hover:bg-white"
+                    @click="goNextImage(tour, idx)"
+                  >
+                    <span class="material-symbols-outlined text-lg">chevron_right</span>
+                  </button>
+
+                  <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/35 px-2 py-1">
+                    <button
+                      v-for="(_, imageIndex) in cardImageUrls(tour, idx)"
+                      :key="`${tour.id}-${imageIndex}`"
+                      type="button"
+                      class="h-1.5 w-1.5 rounded-full transition-all"
+                      :class="(currentImageIndexByTour[tour.id] ?? 0) === imageIndex ? 'bg-white w-4' : 'bg-white/60'"
+                      @click="goToImage(tour, imageIndex)"
+                    />
+                  </div>
+                </template>
+
                 <div
                   class="absolute left-4 top-4 rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-widest text-white"
                 >
