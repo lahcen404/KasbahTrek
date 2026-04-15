@@ -4,7 +4,8 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api, clearAuthToken, getAuthToken } from '../api/client';
 import { getStoredUserRole } from '../api/auth';
-import { getTourById, tourImageUrl, type Tour } from '../api/tours';
+import { getTourById, tourImageUrl } from '../api/tours';
+import type { Tour } from '../types/tours';
 
 const route = useRoute();
 const router = useRouter();

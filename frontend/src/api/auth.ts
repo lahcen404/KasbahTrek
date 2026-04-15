@@ -1,11 +1,7 @@
 import { api, clearAuthToken, setAuthToken } from './client';
+import type { LoginUser, RegisterRole } from '../types/auth';
 
 const USER_ROLE_STORAGE_KEY = 'kasbah_user_role';
-
-export type LoginUser = {
-  fullname: string;
-  role: string;
-};
 
 type LoginResponse = {
   message: string;
@@ -24,8 +20,6 @@ export async function login(email: string, password: string): Promise<LoginUser>
 export function getStoredUserRole(): string | null {
   return localStorage.getItem(USER_ROLE_STORAGE_KEY);
 }
-
-export type RegisterRole = 'TRAVELER' | 'GUIDE';
 
 export async function registerAccount(payload: {
   fullname: string;

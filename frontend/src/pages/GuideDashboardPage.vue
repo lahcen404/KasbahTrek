@@ -6,11 +6,9 @@ import {
   getGuideBookings,
   getGuideTours,
   updateGuideBookingStatus,
-  type GuideBooking,
-  type GuideBookingStatus,
-  type GuideTour,
 } from '../api/guide';
 import { tourImageUrl } from '../api/tours';
+import type { GuideBooking, GuideBookingStatus, GuideTour } from '../types/guide';
 
 const router = useRouter();
 

@@ -2,7 +2,8 @@
 import { computed, onMounted, ref } from 'vue';
 import AppFooter from '../components/layout/AppFooter.vue';
 import AppNavbar from '../components/layout/AppNavbar.vue';
-import { getTours, tourImageUrl, type Tour } from '../api/tours';
+import { getTours, tourImageUrl } from '../api/tours';
+import type { Tour } from '../types/tours';
 
 const loadingTours = ref(true);
 const toursError = ref<string | null>(null);

@@ -2,8 +2,9 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getAuthToken } from '../api/client';
-import { getCategories, type Category } from '../api/categories';
+import { getCategories } from '../api/categories';
 import { createGuideTour } from '../api/guide';
+import type { Category } from '../types/categories';
 
 const router = useRouter();
 
