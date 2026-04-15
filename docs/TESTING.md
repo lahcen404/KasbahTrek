@@ -8,6 +8,47 @@ Use this checklist whenever you want to **run** or **manually test** the full st
 
 ---
 
+## Quick Start (Terminal A/B/C)
+
+Run this from repo root first:
+
+```bash
+docker compose up -d
+docker compose exec kasbah_app php artisan optimize:clear
+docker compose exec kasbah_app php artisan migrate
+```
+
+Then keep these terminals open:
+
+- **Terminal A (queue):**
+
+```bash
+cd /home/lahcen404/Desktop/KasbahTrek
+docker compose exec kasbah_app php artisan queue:work --tries=3 --timeout=120
+```
+
+- **Terminal B (scheduler):**
+
+```bash
+cd /home/lahcen404/Desktop/KasbahTrek
+docker compose exec kasbah_app php artisan schedule:work
+```
+
+- **Terminal C (Stripe webhook listener):**
+
+```bash
+cd /home/lahcen404/Desktop/KasbahTrek
+stripe listen --forward-to http://127.0.0.1:8080/api/stripe/webhook
+```
+
+After starting Terminal C, copy the `whsec_...` value to `backend/.env` as `STRIPE_WEBHOOK_SECRET` and run:
+
+```bash
+docker compose exec kasbah_app php artisan config:clear
+```
+
+---
+
 ## 1. Environment quick notes
 
 - **Docker (repo root):** root `.env` drives Compose (`POSTGRES_*`, `PHP_PORT`, `LOCAL_PATH`, etc.).  
