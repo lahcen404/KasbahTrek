@@ -3,13 +3,13 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getAuthToken } from '../api/client';
 import {
+  deleteGuideTour,
   getGuideBookings,
   getGuideTours,
   updateGuideBookingStatus,
-  type GuideBooking,
-  type GuideBookingStatus,
-  type GuideTour,
 } from '../api/guide';
+import { tourImageUrl } from '../api/tours';
+import type { GuideBooking, GuideBookingStatus, GuideTour } from '../types/guide';
 
 const router = useRouter();
 
@@ -18,6 +18,8 @@ const error = ref<string | null>(null);
 const bookings = ref<GuideBooking[]>([]);
 const guideTours = ref<GuideTour[]>([]);
 const actingBookingId = ref<number | null>(null);
+const deletingTourId = ref<number | null>(null);
+const currentImageIndexByTour = ref<Record<number, number>>({});
 
 const fallbackTourImage =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuBwbqU0NLLMLiDAKTjIOM0tbT-EWzLADfXeatqXU4FtHG9WvVzwlMD-HFEje3zqcOWaEycAsNE0s6sYql5QcYBoxwnWbI6iNqmnXYqhSdXRWHDbIaYWkpMDNpKLmdvuYSQfeLgD-3ARcaKpzaTzNuD8PSJr7VFhhH72afg3u13gqUfpCRLwqeYWXUIT7_bQ5-XLLGARqxB7PqZ_PDJjhbP_WMwVF4J5HJltTwFQafi4SZdFO1rTxIA4WH4eJstBirrPnRLLU0d4xRE';
@@ -91,10 +93,18 @@ const activeTours = computed(() => {
         ? tour.bookings_count
         : bookings.value.filter((booking) => booking.tour?.id === tour.id).length;
 
+    const imageUrls = (tour.images ?? [])
+      .map((image) => tourImageUrl(image.path))
+      .filter((value): value is string => Boolean(value));
+
+    if (imageUrls.length === 0) {
+      imageUrls.push(fallbackTourImage);
+    }
+
     return {
       ...tour,
       bookings_count: bookingCount,
-      image: tour.images?.[0]?.path ? `/storage/${tour.images[0].path}` : fallbackTourImage,
+      imageUrls,
     };
   });
 });
@@ -104,6 +114,41 @@ const recentRequests = computed(() => pendingBookings.value.slice(0, 8));
 function tourRequestsLabel(bookingsCount?: number): string {
   const count = bookingsCount ?? 0;
   return `${count} Bookings this week`;
+}
+
+function currentImageIndex(tourId: number, total: number): number {
+  if (!total || total < 1) return 0;
+  const current = currentImageIndexByTour.value[tourId] ?? 0;
+  if (current >= total) return 0;
+  if (current < 0) return 0;
+  return current;
+}
+
+function currentImageSrc(tour: (GuideTour & { imageUrls: string[] })): string {
+  const total = tour.imageUrls.length;
+  const idx = currentImageIndex(tour.id, total);
+  return tour.imageUrls[idx] ?? fallbackTourImage;
+}
+
+function nextImage(tour: (GuideTour & { imageUrls: string[] })): void {
+  const total = tour.imageUrls.length;
+  if (total <= 1) return;
+  const current = currentImageIndex(tour.id, total);
+  currentImageIndexByTour.value[tour.id] = (current + 1) % total;
+}
+
+function prevImage(tour: (GuideTour & { imageUrls: string[] })): void {
+  const total = tour.imageUrls.length;
+  if (total <= 1) return;
+  const current = currentImageIndex(tour.id, total);
+  currentImageIndexByTour.value[tour.id] = (current - 1 + total) % total;
+}
+
+function goToImage(tour: (GuideTour & { imageUrls: string[] }), index: number): void {
+  const total = tour.imageUrls.length;
+  if (total <= 1) return;
+  if (index < 0 || index >= total) return;
+  currentImageIndexByTour.value[tour.id] = index;
 }
 
 async function loadDashboard(): Promise<void> {
@@ -146,6 +191,25 @@ async function setBookingStatus(bookingId: number, status: Exclude<GuideBookingS
     error.value = err.response?.data?.message ?? 'Could not update booking status.';
   } finally {
     actingBookingId.value = null;
+  }
+}
+
+async function deleteTour(tourId: number, tourTitle?: string): Promise<void> {
+  const label = tourTitle?.trim() || 'this tour';
+  const confirmed = window.confirm(`Delete ${label}? This action cannot be undone.`);
+  if (!confirmed) return;
+
+  deletingTourId.value = tourId;
+  error.value = null;
+
+  try {
+    await deleteGuideTour(tourId);
+    guideTours.value = guideTours.value.filter((tour) => tour.id !== tourId);
+  } catch (e) {
+    const err = e as { response?: { data?: { message?: string } } };
+    error.value = err.response?.data?.message ?? 'Could not delete tour.';
+  } finally {
+    deletingTourId.value = null;
   }
 }
 
@@ -218,7 +282,7 @@ onMounted(() => {
             <h1 class="text-4xl md:text-5xl font-headline font-extrabold text-on-surface tracking-tight">Welcome back, {{ guideName }}.</h1>
             <p class="text-on-surface-variant text-lg mt-2 font-body max-w-2xl">Your next adventure starts in 3 days. Here's what's happening with your tours this month.</p>
           </div>
-          <button class="bg-primary text-white px-8 py-4 rounded-full font-bold flex items-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all" type="button">
+          <button class="bg-primary text-white px-8 py-4 rounded-full font-bold flex items-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all" type="button" @click="router.push({ name: 'guide-tour-create' })">
             <span class="material-symbols-outlined">add</span>
             Create New Tour
           </button>
@@ -281,9 +345,38 @@ onMounted(() => {
                 <div class="h-48 relative overflow-hidden">
                   <img
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    :src="tour.image ?? 'https://lh3.googleusercontent.com/aida-public/AB6AXuBwbqU0NLLMLiDAKTjIOM0tbT-EWzLADfXeatqXU4FtHG9WvVzwlMD-HFEje3zqcOWaEycAsNE0s6sYql5QcYBoxwnWbI6iNqmnXYqhSdXRWHDbIaYWkpMDNpKLmdvuYSQfeLgD-3ARcaKpzaTzNuD8PSJr7VFhhH72afg3u13gqUfpCRLwqeYWXUIT7_bQ5-XLLGARqxB7PqZ_PDJjhbP_WMwVF4J5HJltTwFQafi4SZdFO1rTxIA4WH4eJstBirrPnRLLU0d4xRE'"
+                    :src="currentImageSrc(tour)"
                     :alt="tour.title"
                   />
+
+                  <template v-if="tour.imageUrls.length > 1">
+                    <button
+                      class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/85 p-1.5 text-slate-700 shadow hover:bg-white"
+                      type="button"
+                      @click="prevImage(tour)"
+                    >
+                      <span class="material-symbols-outlined text-lg">chevron_left</span>
+                    </button>
+                    <button
+                      class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/85 p-1.5 text-slate-700 shadow hover:bg-white"
+                      type="button"
+                      @click="nextImage(tour)"
+                    >
+                      <span class="material-symbols-outlined text-lg">chevron_right</span>
+                    </button>
+
+                    <div class="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/35 px-2 py-1">
+                      <button
+                        v-for="(_, idx) in tour.imageUrls"
+                        :key="`${tour.id}-${idx}`"
+                        type="button"
+                        class="h-1.5 w-1.5 rounded-full transition-all"
+                        :class="currentImageIndex(tour.id, tour.imageUrls.length) === idx ? 'bg-white w-4' : 'bg-white/60'"
+                        @click="goToImage(tour, idx)"
+                      />
+                    </div>
+                  </template>
+
                   <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-secondary">
                     {{ tourRequestsLabel(tour.bookings_count) }}
                   </div>
@@ -294,11 +387,20 @@ onMounted(() => {
                   <div class="flex items-center justify-between mt-auto">
                     <span class="font-bold text-primary">{{ formatMoney(tour.price) }} <span class="text-xs font-normal text-on-surface-variant">/ person</span></span>
                     <div class="flex gap-2">
-                      <button class="p-2 bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-colors" type="button">
+                      <button
+                        class="p-2 bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-colors"
+                        type="button"
+                        @click="router.push({ name: 'guide-tour-edit', params: { id: tour.id } })"
+                      >
                         <span class="material-symbols-outlined text-xl">edit</span>
                       </button>
-                      <button class="p-2 bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-colors" type="button">
-                        <span class="material-symbols-outlined text-xl">visibility</span>
+                      <button
+                        class="p-2 bg-surface-container-high rounded-full hover:bg-error/10 transition-colors disabled:opacity-50"
+                        type="button"
+                        :disabled="deletingTourId === tour.id"
+                        @click="deleteTour(tour.id, tour.title)"
+                      >
+                        <span class="material-symbols-outlined text-xl">{{ deletingTourId === tour.id ? 'hourglass_top' : 'delete' }}</span>
                       </button>
                     </div>
                   </div>

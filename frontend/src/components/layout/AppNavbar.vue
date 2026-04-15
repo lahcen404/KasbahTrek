@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { getAuthToken } from '../../api/client';
-import { logout } from '../../api/auth';
+import { getStoredUserRole, logout } from '../../api/auth';
 
 // logo url
 const logoUrl = '/kasbah-trek.png';
@@ -11,6 +11,30 @@ const route = useRoute();
 const router = useRouter();
 const isHome = computed(() => route.name === 'home');
 const isTours = computed(() => route.name === 'tours');
+const isGuideDashboard = computed(() => route.name === 'guide-dashboard');
+const isGuideSection = computed(() => String(route.path).startsWith('/guide'));
+
+const normalizedRole = computed(() => getStoredUserRole()?.toUpperCase() ?? '');
+
+const showDashboardLink = computed(() => {
+  if (!hasValidToken()) {
+    return false;
+  }
+
+  return normalizedRole.value === 'GUIDE' || isGuideSection.value;
+});
+
+const dashboardRoute = computed(() => {
+  if (normalizedRole.value === 'GUIDE' || isGuideSection.value) {
+    return { name: 'guide-dashboard' as const };
+  }
+
+  return { name: 'home' as const };
+});
+
+const isDashboardActive = computed(() => {
+  return isGuideDashboard.value;
+});
 
 const mobileMenuOpen = ref(false);
 
@@ -55,6 +79,16 @@ watch(
       </RouterLink>
 
       <div class="hidden items-center gap-8 md:flex">
+        <RouterLink
+          v-if="showDashboardLink"
+          :to="dashboardRoute"
+          :class="
+            isDashboardActive
+              ? 'border-b-2 border-orange-800 pb-1 font-bold text-orange-800 dark:border-orange-400 dark:text-orange-400'
+              : 'text-slate-600 transition-colors hover:text-orange-800 dark:text-slate-400'
+          "
+          >Dashboard</RouterLink
+        >
         <RouterLink
           :to="{ name: 'home' }"
           :class="
@@ -134,6 +168,12 @@ watch(
       <div class="mx-auto w-full max-w-7xl px-6 pb-4">
         <div class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4 shadow-sm">
           <div class="flex flex-col gap-3">
+            <RouterLink
+              v-if="showDashboardLink"
+              :to="dashboardRoute"
+              class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low"
+              >Dashboard</RouterLink
+            >
             <RouterLink
               :to="{ name: 'home' }"
               class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low"

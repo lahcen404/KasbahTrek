@@ -8,6 +8,7 @@ use App\Models\Tour;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class TourRepository implements TourRepositoryInterface
 {
@@ -148,5 +149,20 @@ class TourRepository implements TourRepositoryInterface
             'tour_id' => $tourId,
             'path' => $path,
         ]);
+    }
+
+    public function deleteImage(int $tourId, int $imageId): bool
+    {
+        $image = Image::where('tour_id', $tourId)->where('id', $imageId)->first();
+
+        if (! $image) {
+            return false;
+        }
+
+        if (! empty($image->path)) {
+            Storage::disk('public')->delete($image->path);
+        }
+
+        return (bool) $image->delete();
     }
 }

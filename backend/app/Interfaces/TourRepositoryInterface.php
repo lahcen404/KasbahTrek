@@ -7,7 +7,7 @@ use Illuminate\Support\Collection;
 
 interface TourRepositoryInterface
 {
-    
+
     public function getAll(array $filters = [], ?int $perPage = null): Collection|Paginator;
 
     public function findById(int $id);
@@ -21,4 +21,6 @@ interface TourRepositoryInterface
     public function getByGuide(int $guideId);
 
     public function addImage(int $tourId, string $path);
+
+    public function deleteImage(int $tourId, int $imageId): bool;
 }

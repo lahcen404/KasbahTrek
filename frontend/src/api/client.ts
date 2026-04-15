@@ -29,6 +29,13 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  if (config.data instanceof FormData) {
+    // Let the browser set multipart boundary automatically.
+    if (config.headers) {
+      delete config.headers['Content-Type'];
+    }
+  }
+
   const token = getAuthToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

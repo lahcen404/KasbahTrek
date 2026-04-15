@@ -2,7 +2,8 @@
 import type { AxiosError } from 'axios';
 import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
-import { registerAccount, type RegisterRole } from '../api/auth';
+import { registerAccount } from '../api/auth';
+import type { RegisterRole } from '../types/auth';
 
 const router = useRouter();
 
