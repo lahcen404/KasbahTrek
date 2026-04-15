@@ -5,6 +5,7 @@ import type {
   GuideBooking,
   GuideBookingStatus,
   GuideTour,
+  SubmitGuideVerificationResponse,
   UpdateGuideTourPayload,
   UpdateGuideTourResponse,
   UpdateBookingStatusResponse,
@@ -87,4 +88,12 @@ export async function deleteGuideTourImage(tourId: number, imageId: number): Pro
 
 export async function deleteGuideTour(tourId: number): Promise<void> {
   await api.delete(`/tours/${tourId}`);
+}
+
+export async function submitGuideVerification(document: File): Promise<SubmitGuideVerificationResponse> {
+  const formData = new FormData();
+  formData.append('document', document);
+
+  const res = await api.post('/guide/verifications', formData);
+  return res.data as SubmitGuideVerificationResponse;
 }

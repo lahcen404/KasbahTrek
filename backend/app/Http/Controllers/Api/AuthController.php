@@ -50,6 +50,24 @@ class AuthController extends Controller
         ], 201);
     }
 
+    public function me(Request $request)
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        return response()->json([
+            'id' => $user->id,
+            'fullname' => $user->fullname,
+            'email' => $user->email,
+            'role' => $user->role?->value,
+            'is_verified' => (bool) $user->is_verified,
+            'verification_request' => $user->verificationRequest?->loadMissing('guide:id,fullname,email,is_verified'),
+        ]);
+    }
+
     public function logout(Request $request)
     {
         $header = $request->header('Authorization');

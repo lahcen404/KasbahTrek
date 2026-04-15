@@ -30,6 +30,22 @@ class VerificationController extends Controller
 
     public function store(StoreVerificationRequest $request)
     {
+        $user = $request->user();
+
+        if ($user?->is_verified) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Your guide account is already verified.',
+            ], 409);
+        }
+
+        if ($user?->verificationRequest) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You have already submitted a verification request.',
+            ], 409);
+        }
+
         $fileUrl = '';
         if ($request->hasFile('document')) {
             $path = $request->file('document')->store('verifications', 'public');
@@ -37,7 +53,7 @@ class VerificationController extends Controller
         }
 
         $data = [
-            'guide_id' => Auth::id(),
+            'guide_id' => $user?->id,
             'file_url' => $fileUrl
         ];
 
