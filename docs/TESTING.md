@@ -1,6 +1,6 @@
 # Kasbah Trek — Testing & command reference
 
-**Architecture & feature decisions:** see **`docs/PROJECT-CONTEXT.md`**.  
+**Architecture & feature decisions:** see **`docs/PROJECT-CONTEXT.md`**.
 
 **Stripe (payments, env, webhook, code map):** see **`docs/STRIPE.md`**.
 
@@ -41,6 +41,8 @@ cd /home/lahcen404/Desktop/KasbahTrek
 stripe listen --forward-to http://127.0.0.1:8080/api/stripe/webhook
 ```
 
+If you already use the older `/api/webhooks/stripe` forward URL, it also works now.
+
 After starting Terminal C, copy the `whsec_...` value to `backend/.env` as `STRIPE_WEBHOOK_SECRET` and run:
 
 ```bash
@@ -51,7 +53,7 @@ docker compose exec kasbah_app php artisan config:clear
 
 ## 1. Environment quick notes
 
-- **Docker (repo root):** root `.env` drives Compose (`POSTGRES_*`, `PHP_PORT`, `LOCAL_PATH`, etc.).  
+- **Docker (repo root):** root `.env` drives Compose (`POSTGRES_*`, `PHP_PORT`, `LOCAL_PATH`, etc.).
   **`LOCAL_PATH`** must be the **absolute path to `backend/`** (the folder that contains `artisan` and `public/`).
 - **Laravel:** real config lives in **`backend/.env`**. If the app runs **inside** `kasbah_app`, that container usually loads the same env you mount (align DB host with service name **`postgres`** when using Compose).
 - **Timezone & reminders:** set `APP_TIMEZONE` (e.g. `Africa/Casablanca`) in `backend/.env`.
@@ -117,7 +119,7 @@ Use **separate terminals** (or tmux panes). Start the API first (**Docker** or *
 |------|---------|------------------|
 | **Queue worker** | `cd backend && php artisan queue:work` | `QUEUE_CONNECTION` is `database` / `redis` — mails & queued jobs won’t run without it. Use **`queue:work -v`** for more output. |
 | **Scheduler** | `cd backend && php artisan schedule:work` | Daily **`bookings:send-reminders`** at **08:00** (`APP_TIMEZONE`). Optional if you only trigger reminders **manually**. |
-| **Stripe webhooks (local)** | `stripe listen --forward-to http://localhost:8080/api/stripe/webhook` | **Payment flow:** Checkout sends events to Stripe; Stripe must reach your app. Replace **8080** with **`PHP_PORT`** or use **8000** with `artisan serve`. Copy **`whsec_...`** into **`STRIPE_WEBHOOK_SECRET`** (same terminal output). |
+| **Stripe webhooks (local)** | `stripe listen --forward-to http://localhost:8080/api/stripe/webhook` | **Payment flow:** Checkout sends events to Stripe; Stripe must reach your app. Replace **8080** with **`PHP_PORT`** or use **8000** with `artisan serve`. Copy **`whsec_...`** into **`STRIPE_WEBHOOK_SECRET`** (same terminal output). The legacy `/api/webhooks/stripe` alias is accepted too. |
 | **Config reload** | `cd backend && php artisan config:clear` | After any **`.env`** change (Stripe keys, `APP_URL`, mail, queue). |
 
 **Docker** (from repo root, same ideas):

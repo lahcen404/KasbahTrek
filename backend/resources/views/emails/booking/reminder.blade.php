@@ -9,7 +9,7 @@ This is a friendly reminder that your booking for **{{ $booking->tour->title }}*
 
 Please arrive on time and contact your guide if you need anything before the trip.
 
-<x-mail::button :url="config('app.url')">
+<x-mail::button :url="url('/')">
 Open Kasbah Trek
 </x-mail::button>
 

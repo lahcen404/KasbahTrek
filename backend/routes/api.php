@@ -24,6 +24,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
+Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
 Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handle']);
 
 // tours

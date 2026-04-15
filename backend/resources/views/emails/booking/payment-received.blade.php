@@ -15,7 +15,7 @@ We have received your payment for **{{ $booking->tour?->title ?? 'your tour' }}*
 
 Your booking remains subject to the usual confirmation flow. If you have questions, reply to this email or use the app.
 
-<x-mail::button :url="config('app.url')">
+<x-mail::button :url="url('/')">
 Open Kasbah Trek
 </x-mail::button>
 
