@@ -19,6 +19,20 @@ class ReviewRepository implements ReviewRepositoryInterface
             ->get();
     }
 
+    public function getGuideReviews(int $guideId): Collection
+    {
+        return Review::query()
+            ->whereHas('tour', function ($query) use ($guideId) {
+                $query->where('guide_id', $guideId);
+            })
+            ->with([
+                'traveler:id,fullname',
+                'tour:id,title,guide_id',
+            ])
+            ->orderByDesc('created_at')
+            ->get();
+    }
+
     public function getTourReviews(int $tourId): Collection
     {
         return Review::query()

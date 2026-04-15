@@ -4,6 +4,7 @@ import type {
   CreateGuideTourResponse,
   GuideBooking,
   GuideBookingStatus,
+  GuideReview,
   GuideTour,
   SubmitGuideVerificationResponse,
   UpdateGuideTourPayload,
@@ -19,6 +20,11 @@ export async function getGuideBookings(): Promise<GuideBooking[]> {
 export async function getGuideTours(): Promise<GuideTour[]> {
   const res = await api.get('/guide/tours');
   return Array.isArray(res.data) ? (res.data as GuideTour[]) : [];
+}
+
+export async function getGuideReviews(): Promise<GuideReview[]> {
+  const res = await api.get('/guide/reviews');
+  return Array.isArray(res.data) ? (res.data as GuideReview[]) : [];
 }
 
 export async function updateGuideBookingStatus(

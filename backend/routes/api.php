@@ -24,6 +24,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
+Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
 Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handle']);
 
 // tours
@@ -44,6 +45,7 @@ Route::middleware(['auth.custom'])->group(function () {
 Route::middleware(['auth.custom', 'role:GUIDE'])->group(function () {
 
     Route::get('/guide/tours', [TourController::class, 'guideTours']);
+    Route::get('/guide/reviews', [ReviewController::class, 'guideReviews']);
     Route::post('/tours', [TourController::class, 'store']);
     Route::put('/tours/{id}', [TourController::class, 'update']);
     Route::delete('/tours/{id}', [TourController::class, 'destroy']);

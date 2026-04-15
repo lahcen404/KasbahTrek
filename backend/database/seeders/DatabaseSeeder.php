@@ -66,5 +66,7 @@ class DatabaseSeeder extends Seeder {
                 'guide_id' => User::where('role', UserRole::GUIDE)->inRandomOrder()->first()->id,
             ]);
         }
+
+        $this->call(ReviewSeeder::class);
     }
 }
