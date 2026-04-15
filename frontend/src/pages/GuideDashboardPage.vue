@@ -366,7 +366,11 @@ onMounted(() => {
                   <div class="flex items-center justify-between mt-auto">
                     <span class="font-bold text-primary">{{ formatMoney(tour.price) }} <span class="text-xs font-normal text-on-surface-variant">/ person</span></span>
                     <div class="flex gap-2">
-                      <button class="p-2 bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-colors" type="button">
+                      <button
+                        class="p-2 bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-colors"
+                        type="button"
+                        @click="router.push({ name: 'guide-tour-edit', params: { id: tour.id } })"
+                      >
                         <span class="material-symbols-outlined text-xl">edit</span>
                       </button>
                       <button class="p-2 bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-colors" type="button">

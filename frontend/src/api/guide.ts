@@ -5,6 +5,8 @@ import type {
   GuideBooking,
   GuideBookingStatus,
   GuideTour,
+  UpdateGuideTourPayload,
+  UpdateGuideTourResponse,
   UpdateBookingStatusResponse,
 } from '../types/guide';
 
@@ -58,4 +60,27 @@ export async function createGuideTour(
 
   const res = await api.post('/tours', formData);
   return res.data as CreateGuideTourResponse;
+}
+
+export async function updateGuideTour(
+  tourId: number,
+  payload: UpdateGuideTourPayload,
+): Promise<UpdateGuideTourResponse> {
+  const res = await api.put(`/tours/${tourId}`, payload);
+  return res.data as UpdateGuideTourResponse;
+}
+
+export async function uploadGuideTourImages(tourId: number, images: File[]): Promise<void> {
+  if (images.length === 0) return;
+
+  const formData = new FormData();
+  images.forEach((image) => {
+    formData.append('images[]', image);
+  });
+
+  await api.post(`/tours/${tourId}/images`, formData);
+}
+
+export async function deleteGuideTourImage(tourId: number, imageId: number): Promise<void> {
+  await api.delete(`/tours/${tourId}/images/${imageId}`);
 }

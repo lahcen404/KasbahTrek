@@ -47,6 +47,7 @@ Route::middleware(['auth.custom', 'role:GUIDE'])->group(function () {
     Route::put('/tours/{id}', [TourController::class, 'update']);
     Route::delete('/tours/{id}', [TourController::class, 'destroy']);
     Route::post('/tours/{id}/images', [TourController::class, 'uploadImages']);
+    Route::delete('/tours/{tourId}/images/{imageId}', [TourController::class, 'deleteImage']);
 
     Route::get('/guide/bookings', [BookingController::class, 'guideBookings']);
     Route::patch('/bookings/{id}/status', [BookingController::class, 'updateStatus']);

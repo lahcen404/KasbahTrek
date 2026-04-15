@@ -31,6 +31,7 @@ export type Tour = {
   description?: string | null;
   location?: string | null;
   price: number;
+  max_spots?: number | null;
   duration_hours?: number | null;
   date?: string | null;
   difficulty?: string | null;

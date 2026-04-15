@@ -4,6 +4,11 @@ export type GuideTour = {
   description?: string | null;
   location?: string | null;
   price?: number | null;
+  max_spots?: number | null;
+  duration_hours?: number | null;
+  difficulty?: string | null;
+  date?: string | null;
+  category_id?: number | null;
   guide_id?: number;
   images?: Array<{ id: number; tour_id: number; path: string }>;
   guide?: { id: number; fullname?: string; is_verified?: boolean } | null;
@@ -49,6 +54,24 @@ export type CreateGuideTourPayload = {
 };
 
 export type CreateGuideTourResponse = {
+  message?: string;
+  tour?: GuideTour;
+};
+
+export type UpdateGuideTourPayload = {
+  title?: string;
+  description?: string;
+  location?: string;
+  price?: number;
+  difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
+  max_spots?: number;
+  duration_hours?: number | null;
+  date?: string | null;
+  category_id?: number | null;
+  remove_image_ids?: number[];
+};
+
+export type UpdateGuideTourResponse = {
   message?: string;
   tour?: GuideTour;
 };

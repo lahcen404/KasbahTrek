@@ -72,7 +72,15 @@ class TourController extends Controller
             return response()->json(['message' => 'Unauthorized: You do not own this tour!!'], 403);
         }
 
-        $updatedTour = $this->tourRepository->update($id, $request->validated());
+        $validated = $request->validated();
+        $removeImageIds = $validated['remove_image_ids'] ?? [];
+        unset($validated['remove_image_ids']);
+
+        $updatedTour = $this->tourRepository->update($id, $validated);
+
+        foreach ($removeImageIds as $imageId) {
+            $this->tourRepository->deleteImage((int) $tour->id, (int) $imageId);
+        }
 
         return response()->json([
             'message' => 'Tour updated successfully!',
@@ -98,6 +106,11 @@ class TourController extends Controller
     public function uploadImages(UploadTourImagesRequest $request, $id)
     {
         $tour = $this->tourRepository->findById($id);
+
+        if ($tour->guide_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized: You do not own this tour!!'], 403);
+        }
+
         $uploadedImages = [];
 
         foreach ($request->file('images') as $file) {
@@ -110,5 +123,20 @@ class TourController extends Controller
             'message' => 'Images uploaded successfully',
             'data' => $uploadedImages,
         ], 201);
+    }
+
+    public function deleteImage(Request $request, $tourId, $imageId)
+    {
+        $tour = $this->tourRepository->findById($tourId);
+
+        if ($tour->guide_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized: You do not own this tour!!'], 403);
+        }
+
+        $this->tourRepository->deleteImage((int) $tourId, (int) $imageId);
+
+        return response()->json([
+            'message' => 'Image deleted successfully',
+        ]);
     }
 }
