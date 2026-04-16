@@ -15,6 +15,7 @@ import NotFoundPage from '../pages/common/NotFoundPage.vue';
 import TravelerProfilePage from '../pages/traveler/TravelerProfilePage.vue';
 import TravelerBookingsPage from '../pages/traveler/TravelerBookingsPage.vue';
 import TravelerPaymentPage from '../pages/traveler/TravelerPaymentPage.vue';
+import TravelerFavoritesPage from '../pages/traveler/TravelerFavoritesPage.vue';
 import GuideDashboardPage from '../pages/guide/GuideDashboardPage.vue';
 import GuideReviewsPage from '../pages/guide/GuideReviewsPage.vue';
 import GuideTourCreatePage from '../pages/guide/GuideTourCreatePage.vue';
@@ -62,6 +63,12 @@ const router = createRouter({
       path: '/traveler/bookings/:id/payment',
       name: 'traveler-booking-payment',
       component: TravelerPaymentPage,
+      meta: { requiresAuth: true, roles: ['TRAVELER'] } as RouteMetaGuard,
+    },
+    {
+      path: '/traveler/favorites',
+      name: 'traveler-favorites',
+      component: TravelerFavoritesPage,
       meta: { requiresAuth: true, roles: ['TRAVELER'] } as RouteMetaGuard,
     },
     {

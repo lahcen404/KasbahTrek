@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { getCategories } from '../../api/categories';
 import { getTours, tourImageUrl } from '../../api/tours';
+import { useTravelerFavorites } from '../../composables/useTravelerFavorites';
 import type { Category } from '../../types/categories';
 import type { Tour } from '../../types/tours';
 
@@ -21,6 +22,15 @@ const selectedDuration = ref<'DAY' | '2_4' | '5_PLUS' | null>(null);
 const selectedDifficulty = ref<'EASY' | 'MEDIUM' | 'HARD' | null>(null);
 const mobileFiltersOpen = ref(false);
 const currentImageIndexByTour = ref<Record<number, number>>({});
+const favoriteActionError = ref<string | null>(null);
+const router = useRouter();
+const route = useRoute();
+const {
+  ensureFavoritesLoaded,
+  isFavorite,
+  isFavoriteBusy,
+  toggleFavorite,
+} = useTravelerFavorites();
 
 // derived values
 const hasTours = computed(() => filteredTours.value.length > 0);
@@ -161,6 +171,7 @@ onMounted(async () => {
   loading.value = true;
   error.value = null;
   try {
+    await ensureFavoritesLoaded();
     categories.value = await getCategories();
     await loadTours();
   } catch {
@@ -189,6 +200,23 @@ onUnmounted(() => {
 
 function clearSearch(): void {
   searchQuery.value = '';
+}
+
+async function handleToggleFavorite(tourId: number): Promise<void> {
+  favoriteActionError.value = null;
+
+  try {
+    await toggleFavorite(tourId);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : '';
+
+    if (message === 'AUTH_REQUIRED') {
+      await router.push({ name: 'login', query: { redirect: route.fullPath } });
+      return;
+    }
+
+    favoriteActionError.value = 'Could not update favorites right now. Please try again.';
+  }
 }
 </script>
 
@@ -488,7 +516,14 @@ function clearSearch(): void {
             {{ error }}
           </div>
 
-          <div v-else class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <div
+            v-if="favoriteActionError && !error"
+            class="mb-4 rounded-2xl bg-error-container/70 px-6 py-4 text-sm font-medium text-error"
+          >
+            {{ favoriteActionError }}
+          </div>
+
+          <div v-if="!error" class="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <!-- Loading skeletons -->
             <div
               v-if="loading"
@@ -554,6 +589,29 @@ function clearSearch(): void {
                 >
                   {{ categoryLabel(tour) }}
                 </div>
+                <button
+                  type="button"
+                  class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/85 text-slate-700 shadow-sm backdrop-blur transition-all hover:scale-105 hover:bg-white"
+                  :disabled="isFavoriteBusy(tour.id)"
+                  :aria-label="isFavorite(tour.id) ? 'Remove from favorites' : 'Add to favorites'"
+                  @click="handleToggleFavorite(tour.id)"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    class="h-5 w-5"
+                    :class="isFavorite(tour.id) ? 'text-rose-600' : 'text-slate-700'"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                      :fill="isFavorite(tour.id) ? 'currentColor' : 'none'"
+                      :stroke="isFavorite(tour.id) ? 'none' : 'currentColor'"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
                 <div
                   class="absolute bottom-4 right-4 flex items-center gap-1 rounded-lg bg-surface/90 px-3 py-1 text-primary backdrop-blur-md"
                 >
