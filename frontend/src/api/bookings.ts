@@ -1,45 +1,13 @@
 import { api } from './client';
-
-export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'CANCELLED';
-export type PaymentStatus = 'UNPAID' | 'PAID';
-
-export type Booking = {
-  id: number;
-  traveler_id: number;
-  tour_id: number;
-  guide_id: number;
-  date: string;
-  total_price: number;
-  status: BookingStatus;
-  payment_status: PaymentStatus;
-  paid_at: string | null;
-  reminder_sent_at: string | null;
-  created_at: string;
-  tour: {
-    id: number;
-    title?: string;
-    name?: string;
-    image_url: string | null;
-    difficulty_level?: string;
-    duration_hours?: number;
-    images?: Array<{ id: number; path: string }>;
-    guide?: {
-      id: number;
-      fullname: string;
-    };
-  };
-  guide?: {
-    id: number;
-    fullname: string;
-  };
-};
-
-type TravelerBookingsResponse = Booking[] | { bookings: Booking[] };
+import type {
+  TravelerBooking,
+  TravelerBookingsResponse,
+} from '../types/traveler';
 
 /**
  * Fetch all bookings for the current traveler
  */
-export async function getTravelerBookings(): Promise<Booking[]> {
+export async function getTravelerBookings(): Promise<TravelerBooking[]> {
   const { data } = await api.get<TravelerBookingsResponse>('/my-bookings');
 
   if (Array.isArray(data)) {
@@ -52,16 +20,16 @@ export async function getTravelerBookings(): Promise<Booking[]> {
 /**
  * Cancel a booking by ID
  */
-export async function cancelBooking(bookingId: number): Promise<Booking> {
-  const { data } = await api.patch<Booking>(`/bookings/${bookingId}/cancel`);
+export async function cancelBooking(bookingId: number): Promise<TravelerBooking> {
+  const { data } = await api.patch<TravelerBooking>(`/bookings/${bookingId}/cancel`);
   return data;
 }
 
 /**
  * Get a single booking by ID
  */
-export async function getBookingById(bookingId: number): Promise<Booking> {
-  const { data } = await api.get<Booking>(`/bookings/${bookingId}`);
+export async function getBookingById(bookingId: number): Promise<TravelerBooking> {
+  const { data } = await api.get<TravelerBooking>(`/bookings/${bookingId}`);
   return data;
 }
 

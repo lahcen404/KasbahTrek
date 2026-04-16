@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { getTravelerBookings, cancelBooking, type Booking, type BookingStatus } from '../../api/bookings';
+import { getTravelerBookings, cancelBooking } from '../../api/bookings';
 import { tourImageUrl } from '../../api/tours';
+import type { BookingFilter, BookingStatus, TravelerBooking } from '../../types/traveler';
 
 const loading = ref(true);
 const error = ref<string | null>(null);
-const bookings = ref<Booking[]>([]);
-const selectedFilter = ref<'all' | 'upcoming' | 'completed' | 'cancelled'>('all');
+const bookings = ref<TravelerBooking[]>([]);
+const selectedFilter = ref<BookingFilter>('all');
 const cancellingId = ref<number | null>(null);
 const showCancelModal = ref(false);
-const bookingToCancel = ref<Booking | null>(null);
+const bookingToCancel = ref<TravelerBooking | null>(null);
 
 const filteredBookings = computed(() => {
   const now = new Date();
@@ -54,7 +55,7 @@ onMounted(async () => {
   await loadBookings();
 });
 
-function openCancelModal(booking: Booking): void {
+function openCancelModal(booking: TravelerBooking): void {
   bookingToCancel.value = booking;
   showCancelModal.value = true;
 }
@@ -112,19 +113,19 @@ function formatDate(dateString: string): string {
   }).format(date);
 }
 
-function bookingTourName(booking: Booking): string {
+function bookingTourName(booking: TravelerBooking): string {
   return booking.tour.title ?? booking.tour.name ?? 'Tour';
 }
 
-function bookingGuideName(booking: Booking): string {
+function bookingGuideName(booking: TravelerBooking): string {
   return booking.guide?.fullname ?? booking.tour.guide?.fullname ?? 'Guide';
 }
 
-function bookingDuration(booking: Booking): string {
+function bookingDuration(booking: TravelerBooking): string {
   return booking.tour.duration_hours ? `${booking.tour.duration_hours} hours` : 'Duration not available';
 }
 
-function bookingImageUrl(booking: Booking): string | null {
+function bookingImageUrl(booking: TravelerBooking): string | null {
   return tourImageUrl(booking.tour.images?.[0]?.path ?? booking.tour.image_url ?? null);
 }
 
