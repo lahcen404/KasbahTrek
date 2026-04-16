@@ -42,3 +42,13 @@ export type TravelerBooking = {
 };
 
 export type TravelerBookingsResponse = TravelerBooking[] | { bookings: TravelerBooking[] };
+
+export type CreateTravelerBookingPayload = {
+  tour_id: number;
+  date: string;
+};
+
+export type CreateTravelerBookingResponse = {
+  message?: string;
+  booking: TravelerBooking;
+};
