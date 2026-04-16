@@ -17,6 +17,12 @@ const {
   toggleFavorite,
 } = useTravelerFavorites();
 
+const travelerNavItems = [
+  { key: 'traveler-profile', label: 'Dashboard', icon: 'dashboard' },
+  { key: 'traveler-bookings', label: 'Bookings', icon: 'event_note' },
+  { key: 'traveler-favorites', label: 'Favorites', icon: 'favorite' },
+] as const;
+
 const favoriteTours = computed(() =>
   favoriteItems.value
     .map((item) => item.tour)
@@ -59,6 +65,18 @@ function durationLabel(tour: Tour): string {
   return `${days} Day${days > 1 ? 's' : ''}`;
 }
 
+function isNavActive(key: string): boolean {
+  if (key === 'traveler-bookings') {
+    return route.name === 'traveler-bookings' || route.name === 'traveler-booking-payment';
+  }
+
+  return route.name === key;
+}
+
+function goToTravelerRoute(key: string): void {
+  void router.push({ name: key });
+}
+
 async function removeFavorite(tourId: number): Promise<void> {
   actionError.value = null;
 
@@ -88,6 +106,28 @@ onMounted(async () => {
 <template>
   <div class="min-h-full bg-surface">
     <section class="mx-auto w-full max-w-7xl px-6 pb-16 pt-12">
+      <div class="grid gap-6 lg:grid-cols-[16rem,1fr]">
+      <aside class="h-fit rounded-3xl border border-outline-variant/20 bg-surface-container-low p-4 lg:sticky lg:top-24">
+        <p class="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Traveler Dashboard</p>
+        <nav class="mt-3 flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+          <button
+            v-for="item in travelerNavItems"
+            :key="item.key"
+            type="button"
+            class="inline-flex min-w-max items-center gap-2 rounded-full px-4 py-3 text-sm font-bold transition-all lg:w-full"
+            :class="
+              isNavActive(item.key)
+                ? 'bg-orange-700 text-white'
+                : 'text-slate-600 hover:bg-orange-50'
+            "
+            @click="goToTravelerRoute(item.key)"
+          >
+            <span class="material-symbols-outlined text-base">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </button>
+        </nav>
+      </aside>
+      <div>
       <header class="mb-10 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p class="text-xs font-bold uppercase tracking-[0.18em] text-primary">Traveler</p>
@@ -198,6 +238,8 @@ onMounted(async () => {
             </div>
           </div>
         </article>
+      </div>
+      </div>
       </div>
     </section>
   </div>

@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import { getStoredUserRole, normalizeAppRole } from '../api/auth';
+import { getStoredUserRole, normalizeAppRole, syncCurrentUser } from '../api/auth';
 import { getAuthToken } from '../api/client';
 import {
   addTravelerFavorite,
@@ -24,6 +24,22 @@ function isTravelerSession(): boolean {
   return hasValidToken() && role === 'TRAVELER';
 }
 
+async function ensureTravelerSession(): Promise<boolean> {
+  if (!hasValidToken()) {
+    return false;
+  }
+
+  let role = normalizeAppRole(getStoredUserRole());
+
+  // Public pages may not have synced the role yet. Sync once before deciding.
+  if (!role) {
+    const user = await syncCurrentUser();
+    role = normalizeAppRole(user?.role ?? getStoredUserRole());
+  }
+
+  return role === 'TRAVELER';
+}
+
 function rebuildFavoriteIndex(items: TravelerFavorite[]): void {
   const index: Record<number, true> = {};
   for (const item of items) {
@@ -40,7 +56,9 @@ function setFavorites(items: TravelerFavorite[]): void {
 }
 
 async function ensureFavoritesLoaded(force = false): Promise<void> {
-  if (!isTravelerSession()) {
+  const travelerSession = await ensureTravelerSession();
+
+  if (!travelerSession) {
     setFavorites([]);
     favoritesLoaded.value = false;
     return;
@@ -69,7 +87,9 @@ function isFavoriteBusy(tourId: number): boolean {
 }
 
 async function toggleFavorite(tourId: number): Promise<void> {
-  if (!isTravelerSession()) {
+  const travelerSession = await ensureTravelerSession();
+
+  if (!travelerSession) {
     throw new Error('AUTH_REQUIRED');
   }
 

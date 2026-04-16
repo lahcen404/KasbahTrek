@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { getTravelerBookings, cancelBooking } from '../../api/bookings';
 import { tourImageUrl } from '../../api/tours';
 import type { BookingFilter, BookingStatus, TravelerBooking } from '../../types/traveler';
 
+const route = useRoute();
+const router = useRouter();
 const loading = ref(true);
 const error = ref<string | null>(null);
 const bookings = ref<TravelerBooking[]>([]);
@@ -140,11 +143,50 @@ function formatPrice(price: string | number): string {
   }).format(numPrice);
 }
 
+const travelerNavItems = [
+  { key: 'traveler-profile', label: 'Dashboard', icon: 'dashboard' },
+  { key: 'traveler-bookings', label: 'Bookings', icon: 'event_note' },
+  { key: 'traveler-favorites', label: 'Favorites', icon: 'favorite' },
+] as const;
+
+function isNavActive(key: string): boolean {
+  if (key === 'traveler-bookings') {
+    return route.name === 'traveler-bookings' || route.name === 'traveler-booking-payment';
+  }
+
+  return route.name === key;
+}
+
+function goToTravelerRoute(key: string): void {
+  void router.push({ name: key });
+}
+
 </script>
 
 <template>
   <div class="min-h-screen bg-surface text-on-surface">
-    <main class="mx-auto max-w-6xl px-5 pb-16 pt-24 sm:px-8">
+    <main class="mx-auto max-w-7xl px-5 pb-16 pt-24 sm:px-8">
+      <div class="grid gap-6 lg:grid-cols-[16rem,1fr]">
+      <aside class="h-fit rounded-3xl border border-outline-variant/20 bg-surface-container-low p-4 lg:sticky lg:top-24">
+        <p class="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Traveler Dashboard</p>
+        <nav class="mt-3 flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+          <button
+            v-for="item in travelerNavItems"
+            :key="item.key"
+            type="button"
+            class="inline-flex min-w-max items-center gap-2 rounded-full px-4 py-3 text-sm font-bold transition-all lg:w-full"
+            :class="
+              isNavActive(item.key)
+                ? 'bg-orange-700 text-white'
+                : 'text-slate-600 hover:bg-orange-50'
+            "
+            @click="goToTravelerRoute(item.key)"
+          >
+            <span class="material-symbols-outlined text-base">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </button>
+        </nav>
+      </aside>
       <section class="relative overflow-hidden rounded-3xl border border-outline-variant/20 bg-surface-container-low p-6 sm:p-8">
         <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-2xl" />
         <div class="pointer-events-none absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-tertiary/10 blur-2xl" />
@@ -278,6 +320,7 @@ function formatPrice(price: string | number): string {
           </article>
         </div>
       </section>
+      </div>
     </main>
 
     <!-- Cancel Confirmation Modal -->
