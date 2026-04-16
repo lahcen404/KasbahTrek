@@ -243,18 +243,6 @@ onMounted(() => {
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
             <span class="font-bold text-sm">Dashboard</span>
           </button>
-          <button class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-orange-50 rounded-full transition-all" type="button">
-            <span class="material-symbols-outlined">explore</span>
-            <span class="font-bold text-sm">Manage Tours</span>
-          </button>
-          <button class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-orange-50 rounded-full transition-all" type="button">
-            <span class="material-symbols-outlined">event_available</span>
-            <span class="font-bold text-sm">Booking Requests</span>
-          </button>
-          <button class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-orange-50 rounded-full transition-all" type="button">
-            <span class="material-symbols-outlined">photo_library</span>
-            <span class="font-bold text-sm">Photos</span>
-          </button>
           <button class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-orange-50 rounded-full transition-all" type="button" @click="router.push({ name: 'guide-reviews' })">
             <span class="material-symbols-outlined">reviews</span>
             <span class="font-bold text-sm">Reviews</span>
@@ -262,14 +250,6 @@ onMounted(() => {
           <button class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-orange-50 rounded-full transition-all" type="button" @click="router.push({ name: 'guide-verification' })">
             <span class="material-symbols-outlined">verified_user</span>
             <span class="font-bold text-sm">Verification</span>
-          </button>
-          <button class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-orange-50 rounded-full transition-all" type="button">
-            <span class="material-symbols-outlined">payments</span>
-            <span class="font-bold text-sm">Earnings</span>
-          </button>
-          <button class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-orange-50 rounded-full transition-all mt-auto" type="button">
-            <span class="material-symbols-outlined">settings</span>
-            <span class="font-bold text-sm">Settings</span>
           </button>
         </nav>
       </aside>
