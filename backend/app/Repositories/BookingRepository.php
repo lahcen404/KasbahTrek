@@ -44,7 +44,7 @@ class BookingRepository implements BookingRepositoryInterface
 
     public function getByTraveler(int $travelerId)
     {
-        return Booking::where('traveler_id', $travelerId)->with('tour')->get();
+           return Booking::where('traveler_id', $travelerId)->with('tour.images')->get();
     }
 
     public function getByGuide(int $guideId)
@@ -73,7 +73,7 @@ class BookingRepository implements BookingRepositoryInterface
     return DB::transaction(function () use ($id) {
         $booking = Booking::findOrFail($id);
 
-        
+
         $booking->update(['status' => 'CANCELLED']);
 
         // decrement current_bookings for the tour

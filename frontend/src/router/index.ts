@@ -13,6 +13,7 @@ import LoginPage from '../pages/auth/LoginPage.vue';
 import RegisterPage from '../pages/auth/RegisterPage.vue';
 import NotFoundPage from '../pages/common/NotFoundPage.vue';
 import TravelerProfilePage from '../pages/traveler/TravelerProfilePage.vue';
+import TravelerBookingsPage from '../pages/traveler/TravelerBookingsPage.vue';
 import GuideDashboardPage from '../pages/guide/GuideDashboardPage.vue';
 import GuideReviewsPage from '../pages/guide/GuideReviewsPage.vue';
 import GuideTourCreatePage from '../pages/guide/GuideTourCreatePage.vue';
@@ -48,6 +49,12 @@ const router = createRouter({
       path: '/traveler/profile',
       name: 'traveler-profile',
       component: TravelerProfilePage,
+      meta: { requiresAuth: true, roles: ['TRAVELER'] } as RouteMetaGuard,
+    },
+    {
+      path: '/traveler/bookings',
+      name: 'traveler-bookings',
+      component: TravelerBookingsPage,
       meta: { requiresAuth: true, roles: ['TRAVELER'] } as RouteMetaGuard,
     },
     {

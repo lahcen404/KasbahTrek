@@ -13,9 +13,11 @@ const isHome = computed(() => route.name === 'home');
 const isTours = computed(() => route.name === 'tours');
 const isGuideDashboard = computed(() => route.name === 'guide-dashboard');
 const isTravelerProfile = computed(() => route.name === 'traveler-profile');
+const isTravelerBookings = computed(() => route.name === 'traveler-bookings');
 const isGuideSection = computed(() => String(route.path).startsWith('/guide'));
 
 const normalizedRole = computed(() => normalizeAppRole(getStoredUserRole()));
+const showTravelerBookingsLink = computed(() => hasValidToken() && normalizedRole.value === 'TRAVELER');
 
 const showDashboardLink = computed(() => {
   if (!hasValidToken()) {
@@ -116,6 +118,16 @@ watch(
           "
           >Tours</RouterLink
         >
+        <RouterLink
+          v-if="showTravelerBookingsLink"
+          :to="{ name: 'traveler-bookings' }"
+          :class="
+            isTravelerBookings
+              ? 'border-b-2 border-orange-800 pb-1 font-bold text-orange-800 dark:border-orange-400 dark:text-orange-400'
+              : 'text-slate-600 transition-colors hover:text-orange-800 dark:text-slate-400'
+          "
+          >Bookings</RouterLink
+        >
         <a
           class="text-slate-600 transition-colors hover:text-orange-800 dark:text-slate-400"
           href="#"
@@ -192,6 +204,12 @@ watch(
               :to="{ name: 'tours' }"
               class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low"
               >Tours</RouterLink
+            >
+            <RouterLink
+              v-if="showTravelerBookingsLink"
+              :to="{ name: 'traveler-bookings' }"
+              class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low"
+              >Bookings</RouterLink
             >
             <a class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low" href="#"
               >How it works</a
