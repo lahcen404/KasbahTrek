@@ -1,32 +1,137 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { getAuthToken } from '../api/client';
+import {
+  getStoredUserRole,
+  normalizeAppRole,
+  setStoredUserRole,
+  syncCurrentUser,
+  type AppRole,
+} from '../api/auth';
 
-import HomePage from '../pages/HomePage.vue';
-import LoginPage from '../pages/LoginPage.vue';
-import RegisterPage from '../pages/RegisterPage.vue';
-import NotFoundPage from '../pages/NotFoundPage.vue';
-import GuideDashboardPage from '../pages/GuideDashboardPage.vue';
-import GuideReviewsPage from '../pages/GuideReviewsPage.vue';
-import GuideTourCreatePage from '../pages/GuideTourCreatePage.vue';
-import GuideTourEditPage from '../pages/GuideTourEditPage.vue';
-import GuideVerificationPage from '../pages/GuideVerificationPage.vue';
-import ToursPage from '../pages/ToursPage.vue';
-import TourDetailsPage from '../pages/TourDetailsPage.vue';
+import HomePage from '../pages/common/HomePage.vue';
+import LoginPage from '../pages/auth/LoginPage.vue';
+import RegisterPage from '../pages/auth/RegisterPage.vue';
+import NotFoundPage from '../pages/common/NotFoundPage.vue';
+import TravelerProfilePage from '../pages/traveler/TravelerProfilePage.vue';
+import GuideDashboardPage from '../pages/guide/GuideDashboardPage.vue';
+import GuideReviewsPage from '../pages/guide/GuideReviewsPage.vue';
+import GuideTourCreatePage from '../pages/guide/GuideTourCreatePage.vue';
+import GuideTourEditPage from '../pages/guide/GuideTourEditPage.vue';
+import GuideVerificationPage from '../pages/guide/GuideVerificationPage.vue';
+import ToursPage from '../pages/traveler/ToursPage.vue';
+import TourDetailsPage from '../pages/traveler/TourDetailsPage.vue';
+
+type RouteMetaGuard = {
+  requiresAuth?: boolean;
+  guestOnly?: boolean;
+  roles?: AppRole[];
+};
+
+function hasValidToken(): boolean {
+  const token = getAuthToken();
+  return typeof token === 'string' && token.trim() !== '' && token !== 'null' && token !== 'undefined';
+}
+
+function homeByRole(role: AppRole | null): { name: string } {
+  if (role === 'GUIDE') {
+    return { name: 'guide-dashboard' };
+  }
+
+  return { name: 'traveler-profile' };
+}
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'home', component: HomePage },
-    { path: '/guide/dashboard', name: 'guide-dashboard', component: GuideDashboardPage },
-    { path: '/guide/reviews', name: 'guide-reviews', component: GuideReviewsPage },
-    { path: '/guide/tours/create', name: 'guide-tour-create', component: GuideTourCreatePage },
-    { path: '/guide/tours/:id/edit', name: 'guide-tour-edit', component: GuideTourEditPage },
-    { path: '/guide/verification', name: 'guide-verification', component: GuideVerificationPage },
+    {
+      path: '/traveler/profile',
+      name: 'traveler-profile',
+      component: TravelerProfilePage,
+      meta: { requiresAuth: true, roles: ['TRAVELER'] } as RouteMetaGuard,
+    },
+    {
+      path: '/guide/dashboard',
+      name: 'guide-dashboard',
+      component: GuideDashboardPage,
+      meta: { requiresAuth: true, roles: ['GUIDE'] } as RouteMetaGuard,
+    },
+    {
+      path: '/guide/reviews',
+      name: 'guide-reviews',
+      component: GuideReviewsPage,
+      meta: { requiresAuth: true, roles: ['GUIDE'] } as RouteMetaGuard,
+    },
+    {
+      path: '/guide/tours/create',
+      name: 'guide-tour-create',
+      component: GuideTourCreatePage,
+      meta: { requiresAuth: true, roles: ['GUIDE'] } as RouteMetaGuard,
+    },
+    {
+      path: '/guide/tours/:id/edit',
+      name: 'guide-tour-edit',
+      component: GuideTourEditPage,
+      meta: { requiresAuth: true, roles: ['GUIDE'] } as RouteMetaGuard,
+    },
+    {
+      path: '/guide/verification',
+      name: 'guide-verification',
+      component: GuideVerificationPage,
+      meta: { requiresAuth: true, roles: ['GUIDE'] } as RouteMetaGuard,
+    },
     { path: '/tours', name: 'tours', component: ToursPage },
     { path: '/tours/:id', name: 'tour-details', component: TourDetailsPage },
-    { path: '/login', name: 'login', component: LoginPage },
-    { path: '/register', name: 'register', component: RegisterPage },
+    { path: '/login', name: 'login', component: LoginPage, meta: { guestOnly: true } as RouteMetaGuard },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterPage,
+      meta: { guestOnly: true } as RouteMetaGuard,
+    },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundPage },
   ],
+});
+
+router.beforeEach(async (to) => {
+  const matched = to.matched.map((record) => (record.meta ?? {}) as RouteMetaGuard);
+  const requiresAuth = matched.some((meta) => meta.requiresAuth);
+  const guestOnly = matched.some((meta) => meta.guestOnly);
+  const roles = matched.flatMap((meta) => meta.roles ?? []);
+
+  const tokenExists = hasValidToken();
+  let role = normalizeAppRole(getStoredUserRole());
+
+  // When local role is missing/stale, sync once with /me before making guard decisions.
+  if (tokenExists && (!role || requiresAuth || guestOnly)) {
+    const user = await syncCurrentUser();
+    role = normalizeAppRole(user?.role ?? getStoredUserRole());
+
+    if (!user && requiresAuth) {
+      return { name: 'login', query: { redirect: to.fullPath } };
+    }
+
+    if (user?.role) {
+      setStoredUserRole(user.role);
+    }
+  }
+
+  if (requiresAuth && !tokenExists) {
+    return { name: 'login', query: { redirect: to.fullPath } };
+  }
+
+  if (guestOnly && tokenExists) {
+    return homeByRole(role);
+  }
+
+  if (requiresAuth && roles.length > 0) {
+    const allowedRoles = new Set(roles);
+    if (!role || !allowedRoles.has(role)) {
+      return homeByRole(role);
+    }
+  }
+
+  return true;
 });
 
 export default router;

@@ -2,7 +2,7 @@
 import type { AxiosError } from 'axios';
 import { ref } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { login } from '../api/auth';
+import { login } from '../../api/auth';
 
 const router = useRouter();
 const route = useRoute();

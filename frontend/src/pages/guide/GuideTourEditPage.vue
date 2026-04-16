@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getAuthToken } from '../api/client';
-import { getCategories } from '../api/categories';
+import { getAuthToken } from '../../api/client';
+import { getCategories } from '../../api/categories';
 import {
   getGuideTours,
   updateGuideTour,
   uploadGuideTourImages,
-} from '../api/guide';
-import { tourImageUrl } from '../api/tours';
-import type { Category } from '../types/categories';
-import type { GuideTour, UpdateGuideTourPayload } from '../types/guide';
+} from '../../api/guide';
+import { tourImageUrl } from '../../api/tours';
+import type { Category } from '../../types/categories';
+import type { GuideTour, UpdateGuideTourPayload } from '../../types/guide';
 
 const route = useRoute();
 const router = useRouter();

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
-import { getCategories } from '../api/categories';
-import { getTours, tourImageUrl } from '../api/tours';
-import type { Category } from '../types/categories';
-import type { Tour } from '../types/tours';
+import { getCategories } from '../../api/categories';
+import { getTours, tourImageUrl } from '../../api/tours';
+import type { Category } from '../../types/categories';
+import type { Tour } from '../../types/tours';
 
 // states
 const loading = ref(true);

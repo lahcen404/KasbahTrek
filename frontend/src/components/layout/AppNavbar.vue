@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { getAuthToken } from '../../api/client';
-import { getStoredUserRole, logout } from '../../api/auth';
+import { getStoredUserRole, logout, normalizeAppRole } from '../../api/auth';
 
 // logo url
 const logoUrl = '/kasbah-trek.png';
@@ -12,16 +12,17 @@ const router = useRouter();
 const isHome = computed(() => route.name === 'home');
 const isTours = computed(() => route.name === 'tours');
 const isGuideDashboard = computed(() => route.name === 'guide-dashboard');
+const isTravelerProfile = computed(() => route.name === 'traveler-profile');
 const isGuideSection = computed(() => String(route.path).startsWith('/guide'));
 
-const normalizedRole = computed(() => getStoredUserRole()?.toUpperCase() ?? '');
+const normalizedRole = computed(() => normalizeAppRole(getStoredUserRole()));
 
 const showDashboardLink = computed(() => {
   if (!hasValidToken()) {
     return false;
   }
 
-  return normalizedRole.value === 'GUIDE' || isGuideSection.value;
+  return true;
 });
 
 const dashboardRoute = computed(() => {
@@ -29,11 +30,19 @@ const dashboardRoute = computed(() => {
     return { name: 'guide-dashboard' as const };
   }
 
-  return { name: 'home' as const };
+  return { name: 'traveler-profile' as const };
+});
+
+const dashboardLabel = computed(() => {
+  if (normalizedRole.value === 'GUIDE' || isGuideSection.value) {
+    return 'Dashboard';
+  }
+
+  return 'Profile';
 });
 
 const isDashboardActive = computed(() => {
-  return isGuideDashboard.value;
+  return isGuideDashboard.value || isTravelerProfile.value;
 });
 
 const mobileMenuOpen = ref(false);
@@ -87,7 +96,7 @@ watch(
               ? 'border-b-2 border-orange-800 pb-1 font-bold text-orange-800 dark:border-orange-400 dark:text-orange-400'
               : 'text-slate-600 transition-colors hover:text-orange-800 dark:text-slate-400'
           "
-          >Dashboard</RouterLink
+          >{{ dashboardLabel }}</RouterLink
         >
         <RouterLink
           :to="{ name: 'home' }"
@@ -172,7 +181,7 @@ watch(
               v-if="showDashboardLink"
               :to="dashboardRoute"
               class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low"
-              >Dashboard</RouterLink
+              >{{ dashboardLabel }}</RouterLink
             >
             <RouterLink
               :to="{ name: 'home' }"

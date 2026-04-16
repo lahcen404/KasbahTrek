@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { getCurrentUser } from '../api/auth';
-import { getAuthToken } from '../api/client';
-import { submitGuideVerification } from '../api/guide';
+import { getCurrentUser } from '../../api/auth';
+import { getAuthToken } from '../../api/client';
+import { submitGuideVerification } from '../../api/guide';
 
 type VerificationState = 'loading' | 'verified' | 'pending' | 'available';
 
