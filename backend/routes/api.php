@@ -60,6 +60,7 @@ Route::middleware(['auth.custom', 'role:GUIDE'])->group(function () {
 
 Route::middleware(['auth.custom', 'role:TRAVELER'])->group(function () {
 
+    Route::get('/bookings/{id}', [BookingController::class, 'show']);
     Route::patch('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
     Route::post('/bookings', [BookingController::class, 'store']);
     Route::post('/bookings/{id}/checkout', [BookingController::class, 'checkout']);

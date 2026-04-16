@@ -1,8 +1,17 @@
 import { api } from './client';
 import type {
+  CreateTravelerBookingPayload,
+  CreateTravelerBookingResponse,
   TravelerBooking,
   TravelerBookingsResponse,
 } from '../types/traveler';
+
+export async function createTravelerBooking(
+  payload: CreateTravelerBookingPayload,
+): Promise<CreateTravelerBookingResponse> {
+  const { data } = await api.post<CreateTravelerBookingResponse>('/bookings', payload);
+  return data;
+}
 
 /**
  * Fetch all bookings for the current traveler
@@ -51,8 +60,11 @@ export async function initiateStripeCheckout(
 export async function initiatePayPalCheckout(
   bookingId: number
 ): Promise<{ url: string }> {
-  const { data } = await api.post<{ url: string }>(
+  const { data } = await api.post<{ approval_url?: string; url?: string }>(
     `/bookings/${bookingId}/paypal/checkout`
   );
-  return data;
+
+  return {
+    url: data.url ?? data.approval_url ?? '',
+  };
 }

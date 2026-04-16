@@ -131,7 +131,13 @@ function bookingImageUrl(booking: TravelerBooking): string | null {
 
 function formatPrice(price: string | number): string {
   const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-  return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+  if (isNaN(numPrice)) return 'MAD 0';
+
+  return new Intl.NumberFormat('en-MA', {
+    style: 'currency',
+    currency: 'MAD',
+    maximumFractionDigits: 0,
+  }).format(numPrice);
 }
 
 </script>
@@ -230,7 +236,7 @@ function formatPrice(price: string | number): string {
                   </div>
                   <div>
                     <p class="text-xs uppercase tracking-wider text-on-surface-variant">Price</p>
-                    <p class="mt-1 font-semibold text-primary">${{ formatPrice(booking.total_price) }}</p>
+                    <p class="mt-1 font-semibold text-primary">{{ formatPrice(booking.total_price) }}</p>
                   </div>
                 </div>
               </div>
@@ -265,13 +271,6 @@ function formatPrice(price: string | number): string {
                     @click="openCancelModal(booking)"
                   >
                     {{ cancellingId === booking.id ? 'Cancelling...' : 'Cancel' }}
-                  </button>
-                  <button
-                    v-if="booking.payment_status === 'UNPAID'"
-                    type="button"
-                    class="rounded-full bg-primary px-3 py-1.5 text-sm font-semibold text-on-primary transition hover:brightness-110"
-                  >
-                    Pay Now
                   </button>
                 </div>
               </div>

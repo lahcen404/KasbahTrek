@@ -3,6 +3,7 @@ import type { AxiosError } from 'axios';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api, clearAuthToken, getAuthToken } from '../../api/client';
+import { createTravelerBooking } from '../../api/bookings';
 import { getStoredUserRole } from '../../api/auth';
 import { getTourById, tourImageUrl } from '../../api/tours';
 import type { Tour } from '../../types/tours';
@@ -15,6 +16,7 @@ const error = ref<string | null>(null);
 const tour = ref<Tour | null>(null);
 const selectedDate = ref('');
 const reserveError = ref<string | null>(null);
+const reserving = ref(false);
 
 // Booking sidebar UI
 const travelers = ref(2);
@@ -66,7 +68,11 @@ const ratingAvg = computed(() => {
   return null;
 });
 const reviewsCount = computed(() => tour.value?.reviews_count ?? reviews.value.length);
-const minDate = computed(() => new Date().toISOString().split('T')[0]);
+const minDate = computed(() => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().split('T')[0];
+});
 
 const formattedTourDate = computed(() => {
   const date = tour.value?.date;
@@ -92,6 +98,7 @@ function fmtMoney(value: number): string {
 }
 
 async function handleReserveClick(): Promise<void> {
+  if (reserving.value) return;
   reserveError.value = null;
 
   const token = getAuthToken();
@@ -111,9 +118,35 @@ async function handleReserveClick(): Promise<void> {
     return;
   }
 
+  if (!tour.value?.id) {
+    reserveError.value = 'Tour information is missing. Please refresh and try again.';
+    return;
+  }
+
+  if (!selectedDate.value) {
+    reserveError.value = 'Please select a booking date.';
+    return;
+  }
+
+  if (selectedDate.value < minDate.value) {
+    reserveError.value = 'Please choose a date after today.';
+    return;
+  }
+
   try {
     // Validate token with backend so stale localStorage values don't block redirect.
     await api.get('/my-bookings');
+
+    reserving.value = true;
+    const created = await createTravelerBooking({
+      tour_id: tour.value.id,
+      date: selectedDate.value,
+    });
+
+    await router.push({
+      name: 'traveler-booking-payment',
+      params: { id: created.booking.id },
+    });
   } catch (e) {
     const err = e as AxiosError;
     if (err.response?.status === 401) {
@@ -130,7 +163,15 @@ async function handleReserveClick(): Promise<void> {
       return;
     }
 
+    if (err.response?.status === 422 || err.response?.status === 400) {
+      const message = (err.response?.data as { message?: string } | undefined)?.message;
+      reserveError.value = message ?? 'Booking validation failed. Please pick a valid upcoming date.';
+      return;
+    }
+
     reserveError.value = 'Could not continue booking right now. Please try again.';
+  } finally {
+    reserving.value = false;
   }
 }
 
@@ -402,9 +443,10 @@ onMounted(async () => {
               <button
                 type="button"
                 class="w-full scale-[0.98] rounded-full bg-primary py-4 text-lg font-bold text-on-primary transition-all hover:brightness-110 hover:shadow-xl active:scale-95"
+                :disabled="reserving"
                 @click="handleReserveClick"
               >
-                Reserve My Spot
+                {{ reserving ? 'Reserving...' : 'Reserve My Spot' }}
               </button>
 
               <p

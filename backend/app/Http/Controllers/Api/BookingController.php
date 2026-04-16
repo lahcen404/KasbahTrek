@@ -49,6 +49,19 @@ class BookingController extends Controller
         return response()->json($bookings);
     }
 
+    public function show(int $id)
+    {
+        $booking = $this->bookingRepository->findById($id);
+
+        if ($booking->traveler_id !== auth()->id()) {
+            return response()->json([
+                'message' => 'Unauthorized: You cannot access someone else\'s booking.',
+            ], 403);
+        }
+
+        return response()->json($booking);
+    }
+
     public function guideBookings()
     {
         $bookings = $this->bookingRepository->getByGuide(auth()->id());
