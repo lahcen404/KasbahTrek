@@ -79,6 +79,7 @@ const guideProfile = computed(() => {
 const guideName = computed(() => guideProfile.value?.fullname ?? 'Guide');
 const guideVerified = computed(() => Boolean(guideProfile.value?.is_verified));
 const guideStatus = computed(() => (guideVerified.value ? 'Verified Guide' : 'Verification Pending'));
+const toursCreated = computed(() => guideTours.value.length);
 
 const monthlyEarnings = computed(() =>
   paidBookings.value.reduce((sum, booking) => sum + (typeof booking.total_price === 'number' ? booking.total_price : 0), 0),
@@ -282,6 +283,10 @@ onMounted(() => {
                 <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
                 {{ guideVerified ? 'VERIFIED GUIDE' : 'GUIDE ACCOUNT' }}
               </span>
+              <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">hiking</span>
+                {{ toursCreated }} TOURS CREATED
+              </span>
             </div>
             <h1 class="text-4xl md:text-5xl font-headline font-extrabold text-on-surface tracking-tight">Welcome back, {{ guideName }}.</h1>
             <p class="text-on-surface-variant text-lg mt-2 font-body max-w-2xl">Your next adventure starts in 3 days. Here's what's happening with your tours this month.</p>
@@ -297,7 +302,7 @@ onMounted(() => {
         </div>
 
         <!-- Stats -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
           <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-[0_4px_20px_rgba(30,42,47,0.04)] border border-outline-variant/5">
             <div class="w-12 h-12 bg-secondary/10 text-secondary rounded-2xl flex items-center justify-center mb-6">
               <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
@@ -329,6 +334,14 @@ onMounted(() => {
               <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
               <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star_half</span>
             </div>
+          </div>
+          <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-[0_4px_20px_rgba(30,42,47,0.04)] border border-outline-variant/5">
+            <div class="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-6">
+              <span class="material-symbols-outlined text-2xl">hiking</span>
+            </div>
+            <p class="text-on-surface-variant font-bold text-xs uppercase tracking-widest mb-1">Tours Created</p>
+            <h2 class="text-3xl font-headline font-bold text-on-surface">{{ toursCreated }}</h2>
+            <p class="text-primary text-sm font-semibold mt-2">Published by your guide account</p>
           </div>
         </section>
 
