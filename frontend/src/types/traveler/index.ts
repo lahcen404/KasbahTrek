@@ -1,3 +1,5 @@
+import type { Tour } from '../tours';
+
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'CANCELLED';
 
 export type PaymentStatus = 'UNPAID' | 'PAID' | 'FAILED';
@@ -51,4 +53,20 @@ export type CreateTravelerBookingPayload = {
 export type CreateTravelerBookingResponse = {
   message?: string;
   booking: TravelerBooking;
+};
+
+export type TravelerFavorite = {
+  id: number;
+  traveler_id: number;
+  tour_id: number;
+  created_at?: string;
+  updated_at?: string;
+  tour: Tour;
+};
+
+export type TravelerFavoritesResponse = TravelerFavorite[] | { favorites: TravelerFavorite[] };
+
+export type AddTravelerFavoriteResponse = {
+  message?: string;
+  favorite: TravelerFavorite;
 };

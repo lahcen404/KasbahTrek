@@ -1,13 +1,24 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AppFooter from '../../components/layout/AppFooter.vue';
 import AppNavbar from '../../components/layout/AppNavbar.vue';
+import { useTravelerFavorites } from '../../composables/useTravelerFavorites';
 import { getTours, tourImageUrl } from '../../api/tours';
 import type { Tour } from '../../types/tours';
 
 const loadingTours = ref(true);
 const toursError = ref<string | null>(null);
+const favoriteError = ref<string | null>(null);
 const tours = ref<Tour[]>([]);
+const router = useRouter();
+const route = useRoute();
+const {
+  ensureFavoritesLoaded,
+  isFavorite,
+  isFavoriteBusy,
+  toggleFavorite,
+} = useTravelerFavorites();
 
 const fallbackTourImages = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuAEjgHrX2YGJv6DhogNrwgXcBGqxZPOKUojJGB_NkvzSrhNpYOBHziN7Fxom3nkEVnx7v6JpCg0EHvWPF8cO-4qRyR_6WfjAG3m6R-_gH9rOCQ5V86lbCKuJL0oThw2ajEPfc1TbXFBAwRYI32Pulf-T3iek5JSRRTD5xNwY1YPixzpcRY9nNvZRQp2DdS6HsQqwkVPZkxYZg-uHmBn0hoO6Pj-z81Snw1-bAs5t9i_DOGESVzO_rhWrJBsg6KUHsV1NwWEk7MeofM',
@@ -56,7 +67,9 @@ function tourMetaLine(tour: Tour): string {
 onMounted(async () => {
   loadingTours.value = true;
   toursError.value = null;
+  favoriteError.value = null;
   try {
+    await ensureFavoritesLoaded();
     tours.value = await getTours({ per_page: 9 });
   } catch {
     toursError.value = 'Could not load tours right now.';
@@ -65,6 +78,23 @@ onMounted(async () => {
     loadingTours.value = false;
   }
 });
+
+async function handleToggleFavorite(tourId: number): Promise<void> {
+  favoriteError.value = null;
+
+  try {
+    await toggleFavorite(tourId);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : '';
+
+    if (message === 'AUTH_REQUIRED') {
+      await router.push({ name: 'login', query: { redirect: route.fullPath } });
+      return;
+    }
+
+    favoriteError.value = 'Could not update favorites right now. Please try again.';
+  }
+}
 </script>
 
 <template>
@@ -144,8 +174,14 @@ onMounted(async () => {
         <div v-if="toursError" class="rounded-2xl bg-error-container/70 px-6 py-4 text-sm font-medium text-error">
           {{ toursError }}
         </div>
+        <div
+          v-if="!toursError && favoriteError"
+          class="mb-4 rounded-2xl bg-error-container/70 px-6 py-4 text-sm font-medium text-error"
+        >
+          {{ favoriteError }}
+        </div>
 
-        <div v-else class="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div v-if="!toursError" class="grid grid-cols-1 gap-8 md:grid-cols-3">
           <!-- Skeletons -->
           <div
             v-if="loadingTours"
@@ -172,6 +208,19 @@ onMounted(async () => {
             :key="tour.id"
             class="group relative overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm transition-all duration-500 hover:shadow-xl"
           >
+            <button
+              type="button"
+              class="absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/85 text-slate-700 shadow-sm backdrop-blur transition-all hover:scale-105 hover:bg-white"
+              :disabled="isFavoriteBusy(tour.id)"
+              :aria-label="isFavorite(tour.id) ? 'Remove from favorites' : 'Add to favorites'"
+              @click="handleToggleFavorite(tour.id)"
+            >
+              <span
+                class="material-symbols-outlined text-lg"
+                :class="isFavorite(tour.id) ? 'text-rose-600' : 'text-slate-700'"
+                >{{ isFavorite(tour.id) ? 'favorite' : 'favorite_border' }}</span
+              >
+            </button>
             <div class="h-80 overflow-hidden">
               <img
                 :src="tourCardImage(tour, idx)"
@@ -214,10 +263,12 @@ onMounted(async () => {
                 <p class="font-semibold text-on-surface">
                   From <span class="text-xl font-bold text-primary">{{ formatPrice(tour.price) }}</span>
                 </p>
-                <span
-                  class="material-symbols-outlined text-outline transition-colors group-hover:text-primary"
-                  >favorite</span
+                <RouterLink
+                  :to="{ name: 'tour-details', params: { id: tour.id } }"
+                  class="inline-flex items-center gap-1 rounded-full border border-outline-variant/30 px-4 py-2 text-sm font-semibold text-on-surface transition hover:border-primary hover:text-primary"
                 >
+                  Details
+                </RouterLink>
               </div>
             </div>
           </div>
