@@ -8,6 +8,27 @@ export type AdminDashboardStats = {
   pending_trip_reports: number;
 };
 
+export type AdminVerificationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export type AdminVerificationActionStatus = 'APPROVED' | 'REJECTED';
+
+export type AdminVerificationGuide = {
+  id: number;
+  fullname?: string;
+  email?: string;
+};
+
+export type AdminVerification = {
+  id: number;
+  file_url: string;
+  status: AdminVerificationStatus;
+  guide_id: number;
+  admin_id?: number | null;
+  created_at?: string;
+  updated_at?: string;
+  guide?: AdminVerificationGuide;
+};
+
 export type AdminUserRole = 'TRAVELER' | 'GUIDE' | 'ADMIN';
 
 export type AdminUser = {

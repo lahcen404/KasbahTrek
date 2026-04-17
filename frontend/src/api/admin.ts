@@ -1,5 +1,11 @@
 import { api } from './client';
-import type { AdminDashboardStats, AdminUser, UpdateAdminUserPayload } from '../types/admin';
+import type {
+  AdminDashboardStats,
+  AdminUser,
+  AdminVerification,
+  AdminVerificationActionStatus,
+  UpdateAdminUserPayload,
+} from '../types/admin';
 
 type AdminDashboardStatsResponse = {
   status?: string;
@@ -15,6 +21,17 @@ type AdminUserResponse = {
   status?: string;
   message?: string;
   data: AdminUser;
+};
+
+type AdminVerificationsResponse = {
+  status?: string;
+  data: AdminVerification[];
+};
+
+type AdminVerificationResponse = {
+  status?: string;
+  message?: string;
+  data: AdminVerification;
 };
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
@@ -39,4 +56,21 @@ export async function updateAdminUser(userId: number, payload: UpdateAdminUserPa
 
 export async function deleteAdminUser(userId: number): Promise<void> {
   await api.delete(`/admin/users/${userId}`);
+}
+
+export async function getAdminVerifications(): Promise<AdminVerification[]> {
+  const { data } = await api.get<AdminVerificationsResponse>('/admin/verifications');
+  return data.data;
+}
+
+export async function updateAdminVerificationStatus(
+  verificationId: number,
+  status: AdminVerificationActionStatus,
+): Promise<AdminVerification> {
+  const { data } = await api.patch<AdminVerificationResponse>(
+    `/admin/verifications/${verificationId}/status`,
+    { status },
+  );
+
+  return data.data;
 }

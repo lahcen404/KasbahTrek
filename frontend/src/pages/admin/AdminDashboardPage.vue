@@ -90,7 +90,7 @@ const adminActions = [
     title: 'Verify Guides',
     description: 'Approve or reject guide verification requests.',
     icon: 'verified_user',
-    route: null,
+    route: 'admin-verifications',
   },
   {
     title: 'Handle Reports',

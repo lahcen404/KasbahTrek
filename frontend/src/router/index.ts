@@ -25,6 +25,7 @@ import GuideTourEditPage from '../pages/guide/GuideTourEditPage.vue';
 import GuideVerificationPage from '../pages/guide/GuideVerificationPage.vue';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage.vue';
 import AdminUsersPage from '../pages/admin/AdminUsersPage.vue';
+import AdminVerificationPage from '../pages/admin/AdminVerificationPage.vue';
 import ToursPage from '../pages/traveler/ToursPage.vue';
 import TourDetailsPage from '../pages/traveler/TourDetailsPage.vue';
 
@@ -130,6 +131,12 @@ const router = createRouter({
       path: '/admin/users',
       name: 'admin-users',
       component: AdminUsersPage,
+      meta: { requiresAuth: true, roles: ['ADMIN'] } as RouteMetaGuard,
+    },
+    {
+      path: '/admin/verifications',
+      name: 'admin-verifications',
+      component: AdminVerificationPage,
       meta: { requiresAuth: true, roles: ['ADMIN'] } as RouteMetaGuard,
     },
     { path: '/tours', name: 'tours', component: ToursPage },

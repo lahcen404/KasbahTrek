@@ -16,8 +16,10 @@ class VerificationRepository implements VerificationRepositoryInterface
 
     public function getPendingRequests()
     {
-        // get all peending requests
-        return Verification::where('status', 'PENDING')->get();
+        // get all pending requests with guide info
+        return Verification::where('status', 'PENDING')
+            ->with('guide:id,fullname,email')
+            ->get();
     }
 
     public function updateStatus($id, $status)
