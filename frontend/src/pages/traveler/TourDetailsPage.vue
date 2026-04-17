@@ -7,7 +7,9 @@ import { createTravelerBooking, getTravelerBookings } from '../../api/bookings';
 import { getCurrentUser, getStoredUserRole } from '../../api/auth';
 import { getTourById, tourImageUrl } from '../../api/tours';
 import { deleteReview, submitReview, updateReview } from '../../api/reviews';
+import { createTripReport } from '../../api/reports';
 import TourReviewForm from '../../components/TourReviewForm.vue';
+import TourReportForm from '../../components/TourReportForm.vue';
 import StarRating from '../../components/common/StarRating.vue';
 import type { TravelerBooking } from '../../types/traveler';
 import type { Tour, TourReview } from '../../types/tours';
@@ -24,8 +26,11 @@ const reserving = ref(false);
 
 // Review form state
 const showReviewModal = ref(false);
+const showReportModal = ref(false);
 const submittingReview = ref(false);
+const submittingReport = ref(false);
 const reviewSuccess = ref<string | null>(null);
+const reportFeedback = ref<string | null>(null);
 const activeEditReviewId = ref<number | null>(null);
 const editReviewRating = ref<number>(0);
 const editReviewComment = ref('');
@@ -267,6 +272,43 @@ function openReviewModal(): void {
   }
 
   showReviewModal.value = true;
+}
+
+function openReportModal(): void {
+  if (!hasValidSessionToken.value) {
+    void router.push({ name: 'login', query: { redirect: route.fullPath } });
+    return;
+  }
+
+  if (!isTraveler.value) {
+    reportFeedback.value = 'Only traveler accounts can submit tour reports.';
+    return;
+  }
+
+  showReportModal.value = true;
+}
+
+async function handleSubmitReport(payload: { reason: string }): Promise<void> {
+  if (!tour.value?.id || submittingReport.value) return;
+
+  try {
+    submittingReport.value = true;
+    reportFeedback.value = null;
+
+    await createTripReport({
+      tour_id: tour.value.id,
+      reason: payload.reason,
+    });
+
+    showReportModal.value = false;
+    reportFeedback.value = 'Tour report submitted. Our team will review it shortly.';
+  } catch (e) {
+    const err = e as AxiosError;
+    const message = (err.response?.data as { message?: string } | undefined)?.message;
+    reportFeedback.value = message ?? 'Could not submit report right now. Please try again.';
+  } finally {
+    submittingReport.value = false;
+  }
 }
 
 function isOwnReview(review: TourReview): boolean {
@@ -526,20 +568,37 @@ onMounted(async () => {
                 </div>
               </Transition>
 
-              <button
-                type="button"
-                class="mb-2 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition"
-                :class="
-                  canShareExperience
-                    ? 'bg-primary text-on-primary hover:brightness-110'
-                    : 'cursor-not-allowed bg-surface-container-high text-on-surface-variant'
-                "
-                :disabled="!canShareExperience"
-                @click="openReviewModal"
+              <div
+                v-if="reportFeedback"
+                class="mb-6 rounded-2xl bg-error-container/70 px-6 py-4 text-sm font-medium text-error"
               >
-                <span class="material-symbols-outlined">rate_review</span>
-                Share Your Experience
-              </button>
+                {{ reportFeedback }}
+              </div>
+
+              <div class="mb-2 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition"
+                  :class="
+                    canShareExperience
+                      ? 'bg-primary text-on-primary hover:brightness-110'
+                      : 'cursor-not-allowed bg-surface-container-high text-on-surface-variant'
+                  "
+                  :disabled="!canShareExperience"
+                  @click="openReviewModal"
+                >
+                  <span class="material-symbols-outlined">rate_review</span>
+                  Share Your Experience
+                </button>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-full bg-error/90 px-6 py-3 text-sm font-semibold text-on-error transition hover:brightness-110"
+                  @click="openReportModal"
+                >
+                  <span class="material-symbols-outlined">report</span>
+                  Report Tour
+                </button>
+              </div>
               <p
                 v-if="reviewGuardLoading || reviewEligibilityHint"
                 class="mb-6 text-sm text-on-surface-variant"
@@ -716,6 +775,13 @@ onMounted(async () => {
           :tour-title="tour?.title ?? 'Tour'"
           :is-loading="submittingReview"
           @submit="handleSubmitReview"
+        />
+
+        <TourReportForm
+          v-model="showReportModal"
+          :tour-title="tour?.title ?? 'Tour'"
+          :is-loading="submittingReport"
+          @submit="handleSubmitReport"
         />
       </template>
     </main>
