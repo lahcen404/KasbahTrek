@@ -6,11 +6,11 @@ import { api, clearAuthToken, getAuthToken } from '../../api/client';
 import { createTravelerBooking, getTravelerBookings } from '../../api/bookings';
 import { getCurrentUser, getStoredUserRole } from '../../api/auth';
 import { getTourById, tourImageUrl } from '../../api/tours';
-import { submitReview } from '../../api/reviews';
+import { deleteReview, submitReview, updateReview } from '../../api/reviews';
 import TourReviewForm from '../../components/TourReviewForm.vue';
 import StarRating from '../../components/common/StarRating.vue';
 import type { TravelerBooking } from '../../types/traveler';
-import type { Tour } from '../../types/tours';
+import type { Tour, TourReview } from '../../types/tours';
 
 const route = useRoute();
 const router = useRouter();
@@ -26,6 +26,10 @@ const reserving = ref(false);
 const showReviewModal = ref(false);
 const submittingReview = ref(false);
 const reviewSuccess = ref<string | null>(null);
+const activeEditReviewId = ref<number | null>(null);
+const editReviewRating = ref<number>(0);
+const editReviewComment = ref('');
+const reviewActionLoadingId = ref<number | null>(null);
 const reviewGuardLoading = ref(false);
 const travelerBookings = ref<TravelerBooking[]>([]);
 const currentTravelerId = ref<number | null>(null);
@@ -265,6 +269,76 @@ function openReviewModal(): void {
   showReviewModal.value = true;
 }
 
+function isOwnReview(review: TourReview): boolean {
+  if (!currentTravelerId.value) return false;
+  return review.traveler?.id === currentTravelerId.value || review.user?.id === currentTravelerId.value;
+}
+
+function startEditReview(review: TourReview): void {
+  if (!isOwnReview(review)) return;
+  activeEditReviewId.value = review.id;
+  editReviewRating.value = review.rating ?? 0;
+  editReviewComment.value = review.comment ?? '';
+  reviewSuccess.value = null;
+}
+
+function cancelEditReview(): void {
+  activeEditReviewId.value = null;
+  editReviewRating.value = 0;
+  editReviewComment.value = '';
+}
+
+async function saveReviewUpdate(reviewId: number): Promise<void> {
+  if (reviewActionLoadingId.value !== null || editReviewRating.value < 1 || editReviewComment.value.trim().length === 0) {
+    if (editReviewRating.value < 1 || editReviewComment.value.trim().length === 0) {
+      reviewSuccess.value = 'Rating and comment are required.';
+    }
+    return;
+  }
+
+  try {
+    reviewActionLoadingId.value = reviewId;
+    reviewSuccess.value = null;
+
+    await updateReview(reviewId, {
+      rating: editReviewRating.value,
+      comment: editReviewComment.value.trim(),
+    });
+
+    tour.value = await getTourById(tourId.value);
+    cancelEditReview();
+    reviewSuccess.value = 'Review updated successfully.';
+  } catch (e) {
+    const err = e as AxiosError;
+    const message = (err.response?.data as { message?: string } | undefined)?.message;
+    reviewSuccess.value = message ?? 'Could not update review right now.';
+  } finally {
+    reviewActionLoadingId.value = null;
+  }
+}
+
+async function removeReviewFromTour(reviewId: number): Promise<void> {
+  if (reviewActionLoadingId.value !== null) return;
+  const confirmed = window.confirm('Delete this review? This action cannot be undone.');
+  if (!confirmed) return;
+
+  try {
+    reviewActionLoadingId.value = reviewId;
+    reviewSuccess.value = null;
+
+    await deleteReview(reviewId);
+    tour.value = await getTourById(tourId.value);
+    cancelEditReview();
+    reviewSuccess.value = 'Review deleted successfully.';
+  } catch (e) {
+    const err = e as AxiosError;
+    const message = (err.response?.data as { message?: string } | undefined)?.message;
+    reviewSuccess.value = message ?? 'Could not delete review right now.';
+  } finally {
+    reviewActionLoadingId.value = null;
+  }
+}
+
 async function loadReviewEligibility(): Promise<void> {
   if (!hasValidSessionToken.value || !isTraveler.value || !tour.value?.id) return;
 
@@ -500,6 +574,55 @@ onMounted(async () => {
                   <p class="italic leading-relaxed text-slate-600">
                     “{{ r.comment ?? 'Amazing experience.' }}”
                   </p>
+
+                  <div v-if="activeEditReviewId === r.id" class="mt-4 space-y-3 rounded-xl bg-surface-container-low p-4">
+                    <StarRating v-model="editReviewRating" size="sm" />
+                    <textarea
+                      v-model="editReviewComment"
+                      rows="3"
+                      class="w-full rounded-xl border border-outline-variant/30 bg-surface px-3 py-2 text-sm text-on-surface outline-none focus:border-primary"
+                      maxlength="1000"
+                    />
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        class="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-on-primary transition hover:brightness-110 disabled:opacity-50"
+                        :disabled="reviewActionLoadingId === r.id"
+                        @click="saveReviewUpdate(r.id)"
+                      >
+                        {{ reviewActionLoadingId === r.id ? 'Saving...' : 'Save' }}
+                      </button>
+                      <button
+                        type="button"
+                        class="rounded-full border border-outline-variant/30 px-4 py-2 text-xs font-semibold text-on-surface-variant transition hover:border-primary/40"
+                        :disabled="reviewActionLoadingId === r.id"
+                        @click="cancelEditReview"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+
+                  <div v-if="isOwnReview(r)" class="mt-4 flex items-center gap-3">
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-1 text-sm font-semibold text-on-surface-variant transition hover:text-primary"
+                      :disabled="reviewActionLoadingId === r.id"
+                      @click="startEditReview(r)"
+                    >
+                      <span class="material-symbols-outlined text-base">edit</span>
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-1 text-sm font-semibold text-error transition hover:opacity-80"
+                      :disabled="reviewActionLoadingId === r.id"
+                      @click="removeReviewFromTour(r.id)"
+                    >
+                      <span class="material-symbols-outlined text-base">delete</span>
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
