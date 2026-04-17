@@ -78,6 +78,7 @@ Route::middleware(['auth.custom', 'role:TRAVELER'])->group(function () {
     Route::get('/my-reviews', [ReviewController::class, 'myReviews']);
 
     Route::post('/reports', [TripReportController::class, 'store']);
+    Route::get('/my-reports', [TripReportController::class, 'myReports']);
 });
 Route::middleware(['auth.custom', 'role:ADMIN'])->prefix('admin')->group(function () {
     Route::get('/users', [AdminUserController::class, 'index']);

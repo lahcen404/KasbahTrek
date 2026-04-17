@@ -16,6 +16,7 @@ const travelerNavItems = [
   { key: 'traveler-bookings', label: 'Bookings', icon: 'event_note' },
   { key: 'traveler-favorites', label: 'Favorites', icon: 'favorite' },
   { key: 'traveler-reviews', label: 'Reviews', icon: 'reviews' },
+  { key: 'traveler-reports', label: 'Reports', icon: 'report_problem' },
 ] as const;
 
 const loadingMethod = ref<'stripe' | 'paypal' | null>(null);
