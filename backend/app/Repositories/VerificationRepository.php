@@ -25,7 +25,7 @@ class VerificationRepository implements VerificationRepositoryInterface
     public function updateStatus($id, $status)
     {
         $verification = Verification::findOrFail($id);
-        
+
         $verification->update([
             'status' => strtoupper($status)
         ]);

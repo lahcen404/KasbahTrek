@@ -195,14 +195,11 @@ onMounted(() => {
 
           <div class="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
             <section class="rounded-2xl border border-outline-variant/20 bg-surface p-5 shadow-sm">
-              <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
                 <div>
                   <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Admin Workflows</p>
                   <h2 class="mt-1 text-2xl font-bold">What you can manage next</h2>
                 </div>
-                <span class="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                  Backend ready
-                </span>
               </div>
 
               <div class="mt-5 grid gap-4 sm:grid-cols-2">

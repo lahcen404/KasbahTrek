@@ -78,7 +78,7 @@ watch(
           class="h-10 w-auto object-contain"
         />
         <span
-          class="font-headline text-2xl font-bold uppercase tracking-tight text-orange-900 dark:text-orange-500"
+          class="font-noto-serif text-2xl font-bold uppercase tracking-[0.06em] text-orange-900 dark:text-orange-500"
         >
           KASBAH TREK
         </span>

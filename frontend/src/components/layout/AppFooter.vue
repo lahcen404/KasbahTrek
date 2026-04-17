@@ -12,7 +12,7 @@ const logoUrl = '/kasbah-trek.png';
             alt=""
             class="h-9 w-auto object-contain"
           />
-          <div class="font-headline text-xl font-bold uppercase text-orange-900 dark:text-orange-500">
+          <div class="font-noto-serif text-xl font-bold uppercase tracking-[0.06em] text-orange-900 dark:text-orange-500">
             KASBAH TREK
           </div>
         </div>
