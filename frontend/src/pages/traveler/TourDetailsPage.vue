@@ -3,12 +3,13 @@ import type { AxiosError } from 'axios';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api, clearAuthToken, getAuthToken } from '../../api/client';
-import { createTravelerBooking } from '../../api/bookings';
-import { getStoredUserRole } from '../../api/auth';
+import { createTravelerBooking, getTravelerBookings } from '../../api/bookings';
+import { getCurrentUser, getStoredUserRole } from '../../api/auth';
 import { getTourById, tourImageUrl } from '../../api/tours';
 import { submitReview } from '../../api/reviews';
 import TourReviewForm from '../../components/TourReviewForm.vue';
 import StarRating from '../../components/common/StarRating.vue';
+import type { TravelerBooking } from '../../types/traveler';
 import type { Tour } from '../../types/tours';
 
 const route = useRoute();
@@ -25,6 +26,9 @@ const reserving = ref(false);
 const showReviewModal = ref(false);
 const submittingReview = ref(false);
 const reviewSuccess = ref<string | null>(null);
+const reviewGuardLoading = ref(false);
+const travelerBookings = ref<TravelerBooking[]>([]);
+const currentTravelerId = ref<number | null>(null);
 
 // Booking sidebar UI
 const travelers = ref(2);
@@ -76,6 +80,38 @@ const ratingAvg = computed(() => {
   return null;
 });
 const reviewsCount = computed(() => tour.value?.reviews_count ?? reviews.value.length);
+const isTraveler = computed(() => getStoredUserRole()?.toUpperCase() === 'TRAVELER');
+const hasValidSessionToken = computed(() => {
+  const token = getAuthToken();
+  return typeof token === 'string' && token.trim() !== '' && token !== 'null' && token !== 'undefined';
+});
+const hasConfirmedPaidBookingForTour = computed(() => {
+  if (!tour.value?.id) return false;
+  return travelerBookings.value.some(
+    (booking) =>
+      booking.tour_id === tour.value?.id &&
+      booking.status === 'CONFIRMED' &&
+      booking.payment_status === 'PAID',
+  );
+});
+const hasAlreadyReviewedTour = computed(() => {
+  if (!currentTravelerId.value) return false;
+  return reviews.value.some((review) => review.traveler?.id === currentTravelerId.value);
+});
+const canShareExperience = computed(
+  () =>
+    isTraveler.value &&
+    hasValidSessionToken.value &&
+    hasConfirmedPaidBookingForTour.value &&
+    !hasAlreadyReviewedTour.value,
+);
+const reviewEligibilityHint = computed(() => {
+  if (!hasValidSessionToken.value) return 'Log in as traveler to share your review.';
+  if (!isTraveler.value) return 'Only traveler accounts can post reviews.';
+  if (hasAlreadyReviewedTour.value) return 'You already reviewed this tour.';
+  if (!hasConfirmedPaidBookingForTour.value) return 'Review opens after your booking is confirmed and paid.';
+  return null;
+});
 const minDate = computed(() => {
   const d = new Date();
   d.setDate(d.getDate() + 1);
@@ -184,7 +220,7 @@ async function handleReserveClick(): Promise<void> {
 }
 
 async function handleSubmitReview(payload: { rating: number; comment: string }): Promise<void> {
-  if (!tour.value?.id || submittingReview.value) return;
+  if (!tour.value?.id || submittingReview.value || !canShareExperience.value) return;
 
   try {
     submittingReview.value = true;
@@ -220,6 +256,30 @@ async function handleSubmitReview(payload: { rating: number; comment: string }):
   }
 }
 
+function openReviewModal(): void {
+  if (!canShareExperience.value) {
+    reviewSuccess.value = reviewEligibilityHint.value ?? 'You are not eligible to review this tour yet.';
+    return;
+  }
+
+  showReviewModal.value = true;
+}
+
+async function loadReviewEligibility(): Promise<void> {
+  if (!hasValidSessionToken.value || !isTraveler.value || !tour.value?.id) return;
+
+  reviewGuardLoading.value = true;
+  try {
+    const [me, bookings] = await Promise.all([getCurrentUser(), getTravelerBookings()]);
+    currentTravelerId.value = typeof me.id === 'number' ? me.id : null;
+    travelerBookings.value = bookings;
+  } catch {
+    travelerBookings.value = [];
+  } finally {
+    reviewGuardLoading.value = false;
+  }
+}
+
 onMounted(async () => {
   loading.value = true;
   error.value = null;
@@ -231,6 +291,7 @@ onMounted(async () => {
     if (tour.value?.date) {
       selectedDate.value = String(tour.value.date).slice(0, 10);
     }
+    await loadReviewEligibility();
   } catch {
     error.value = 'Could not load this tour. Please go back and try again.';
     tour.value = null;
@@ -393,12 +454,24 @@ onMounted(async () => {
 
               <button
                 type="button"
-                class="mb-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:brightness-110"
-                @click="showReviewModal = true"
+                class="mb-2 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition"
+                :class="
+                  canShareExperience
+                    ? 'bg-primary text-on-primary hover:brightness-110'
+                    : 'cursor-not-allowed bg-surface-container-high text-on-surface-variant'
+                "
+                :disabled="!canShareExperience"
+                @click="openReviewModal"
               >
                 <span class="material-symbols-outlined">rate_review</span>
                 Share Your Experience
               </button>
+              <p
+                v-if="reviewGuardLoading || reviewEligibilityHint"
+                class="mb-6 text-sm text-on-surface-variant"
+              >
+                {{ reviewGuardLoading ? 'Checking your review eligibility...' : reviewEligibilityHint }}
+              </p>
 
               <div v-if="reviews.length === 0" class="rounded-2xl bg-surface-container-lowest p-6 text-slate-600">
                 No reviews yet.

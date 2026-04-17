@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Enums\BookingStatus;
+use App\Enums\PaymentStatus;
 use App\Interfaces\ReviewRepositoryInterface;
 use App\Models\Booking;
 use App\Models\Review;
@@ -46,14 +47,15 @@ class ReviewRepository implements ReviewRepositoryInterface
     {
         $tourId = (int) $data['tour_id'];
 
-        $hasConfirmedBooking = Booking::query()
+        $hasEligibleBooking = Booking::query()
             ->where('traveler_id', $travelerId)
             ->where('tour_id', $tourId)
             ->where('status', BookingStatus::CONFIRMED->value)
+            ->where('payment_status', PaymentStatus::PAID->value)
             ->exists();
 
-        if (! $hasConfirmedBooking) {
-            throw new \InvalidArgumentException('You can review only tours with a confirmed booking.');
+        if (! $hasEligibleBooking) {
+            throw new \InvalidArgumentException('You can review only tours that were confirmed and paid.');
         }
 
         $alreadyReviewed = Review::query()
