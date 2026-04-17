@@ -61,3 +61,34 @@ export type UpsertAdminCategoryPayload = {
   name: string;
   description?: string | null;
 };
+
+export type AdminTripReportStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'RESOLVED';
+
+export type AdminTripReportActionStatus = AdminTripReportStatus;
+
+export type AdminTripReport = {
+  id: number;
+  reason: string;
+  status: AdminTripReportStatus;
+  traveler_id: number;
+  tour_id: number;
+  admin_id?: number | null;
+  created_at?: string;
+  updated_at?: string;
+  traveler?: {
+    id: number;
+    fullname?: string;
+    name?: string;
+    email?: string;
+  };
+  tour?: {
+    id: number;
+    title?: string;
+  };
+  admin?: {
+    id: number;
+    fullname?: string;
+    name?: string;
+    email?: string;
+  };
+};
