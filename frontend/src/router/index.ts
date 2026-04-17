@@ -17,6 +17,7 @@ import TravelerBookingsPage from '../pages/traveler/TravelerBookingsPage.vue';
 import TravelerPaymentPage from '../pages/traveler/TravelerPaymentPage.vue';
 import TravelerFavoritesPage from '../pages/traveler/TravelerFavoritesPage.vue';
 import TravelerReviewsPage from '../pages/traveler/TravelerReviewsPage.vue';
+import TravelerReportsPage from '../pages/traveler/TravelerReportsPage.vue';
 import GuideDashboardPage from '../pages/guide/GuideDashboardPage.vue';
 import GuideReviewsPage from '../pages/guide/GuideReviewsPage.vue';
 import GuideTourCreatePage from '../pages/guide/GuideTourCreatePage.vue';
@@ -76,6 +77,12 @@ const router = createRouter({
       path: '/traveler/reviews',
       name: 'traveler-reviews',
       component: TravelerReviewsPage,
+      meta: { requiresAuth: true, roles: ['TRAVELER'] } as RouteMetaGuard,
+    },
+    {
+      path: '/traveler/reports',
+      name: 'traveler-reports',
+      component: TravelerReportsPage,
       meta: { requiresAuth: true, roles: ['TRAVELER'] } as RouteMetaGuard,
     },
     {

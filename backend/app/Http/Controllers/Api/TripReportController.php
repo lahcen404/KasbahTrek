@@ -18,7 +18,7 @@ class TripReportController extends Controller
     public function store(StoreTripReportRequest $request)
     {
         $data = $request->validated();
-        
+
         $data['status'] = 'PENDING';
         $data['traveler_id'] = auth()->id();
 
@@ -28,5 +28,14 @@ class TripReportController extends Controller
             'message' => 'Trip report submitted successfully !!!',
             'report' => $report,
         ], 201);
+    }
+
+    public function myReports()
+    {
+        $reports = $this->tripReportRepository->getByTravelerId(auth()->id());
+
+        return response()->json([
+            'data' => $reports,
+        ]);
     }
 }

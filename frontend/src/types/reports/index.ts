@@ -12,6 +12,22 @@ export type TripReport = {
   admin_id?: number | null;
   created_at?: string;
   updated_at?: string;
+  traveler?: {
+    id: number;
+    fullname?: string;
+    name?: string;
+    email: string;
+  };
+  tour?: {
+    id: number;
+    title: string;
+  };
+  admin?: {
+    id: number;
+    fullname?: string;
+    name?: string;
+    email: string;
+  };
 };
 
 export type CreateTripReportResponse = {
