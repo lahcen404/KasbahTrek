@@ -48,3 +48,16 @@ export type UpdateAdminUserPayload = {
   is_verified?: boolean;
   password?: string;
 };
+
+export type AdminCategory = {
+  id: number;
+  name: string;
+  description?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type UpsertAdminCategoryPayload = {
+  name: string;
+  description?: string | null;
+};
