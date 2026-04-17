@@ -87,6 +87,12 @@ const adminActions = [
     route: 'admin-tours',
   },
   {
+    title: 'Manage Categories',
+    description: 'Create, update, and remove tour categories.',
+    icon: 'category',
+    route: 'admin-categories',
+  },
+  {
     title: 'Verify Guides',
     description: 'Approve or reject guide verification requests.',
     icon: 'verified_user',

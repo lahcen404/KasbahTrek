@@ -1,10 +1,12 @@
 import { api } from './client';
 import type { Tour } from '../types/tours';
 import type {
+  AdminCategory,
   AdminDashboardStats,
   AdminUser,
   AdminVerification,
   AdminVerificationActionStatus,
+  UpsertAdminCategoryPayload,
   UpdateAdminUserPayload,
 } from '../types/admin';
 
@@ -38,6 +40,13 @@ type AdminVerificationResponse = {
 type AdminToursResponse = {
   status?: string;
   data: Tour[];
+};
+
+type AdminCategoriesResponse = AdminCategory[];
+
+type AdminCategoryResponse = {
+  message?: string;
+  category: AdminCategory;
 };
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
@@ -88,4 +97,26 @@ export async function getAdminTours(): Promise<Tour[]> {
 
 export async function deleteAdminTour(tourId: number): Promise<void> {
   await api.delete(`/admin/tours/${tourId}`);
+}
+
+export async function getAdminCategories(): Promise<AdminCategory[]> {
+  const { data } = await api.get<AdminCategoriesResponse>('/admin/categories');
+  return Array.isArray(data) ? data : [];
+}
+
+export async function createAdminCategory(payload: UpsertAdminCategoryPayload): Promise<AdminCategory> {
+  const { data } = await api.post<AdminCategoryResponse>('/admin/categories', payload);
+  return data.category;
+}
+
+export async function updateAdminCategory(
+  categoryId: number,
+  payload: Partial<UpsertAdminCategoryPayload>,
+): Promise<AdminCategory> {
+  const { data } = await api.put<AdminCategoryResponse>(`/admin/categories/${categoryId}`, payload);
+  return data.category;
+}
+
+export async function deleteAdminCategory(categoryId: number): Promise<void> {
+  await api.delete(`/admin/categories/${categoryId}`);
 }
