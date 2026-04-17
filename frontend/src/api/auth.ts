@@ -4,7 +4,7 @@ import type { CurrentUser, LoginUser, RegisterRole } from '../types/auth';
 
 const USER_ROLE_STORAGE_KEY = 'kasbah_user_role';
 
-export type AppRole = 'GUIDE' | 'TRAVELER';
+export type AppRole = 'GUIDE' | 'TRAVELER' | 'ADMIN';
 
 type LoginResponse = {
   message: string;
@@ -35,7 +35,7 @@ export function setStoredUserRole(role: string | null | undefined): void {
 
 export function normalizeAppRole(role: string | null | undefined): AppRole | null {
   const value = (role ?? '').toUpperCase();
-  if (value === 'GUIDE' || value === 'TRAVELER') {
+  if (value === 'GUIDE' || value === 'TRAVELER' || value === 'ADMIN') {
     return value;
   }
 

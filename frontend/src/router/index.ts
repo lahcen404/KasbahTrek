@@ -23,6 +23,8 @@ import GuideReviewsPage from '../pages/guide/GuideReviewsPage.vue';
 import GuideTourCreatePage from '../pages/guide/GuideTourCreatePage.vue';
 import GuideTourEditPage from '../pages/guide/GuideTourEditPage.vue';
 import GuideVerificationPage from '../pages/guide/GuideVerificationPage.vue';
+import AdminDashboardPage from '../pages/admin/AdminDashboardPage.vue';
+import AdminUsersPage from '../pages/admin/AdminUsersPage.vue';
 import ToursPage from '../pages/traveler/ToursPage.vue';
 import TourDetailsPage from '../pages/traveler/TourDetailsPage.vue';
 
@@ -38,6 +40,9 @@ function hasValidToken(): boolean {
 }
 
 function homeByRole(role: AppRole | null): { name: string } {
+  if (role === 'ADMIN') {
+    return { name: 'admin-dashboard' };
+  }
   if (role === 'GUIDE') {
     return { name: 'guide-dashboard' };
   }
@@ -114,6 +119,18 @@ const router = createRouter({
       name: 'guide-verification',
       component: GuideVerificationPage,
       meta: { requiresAuth: true, roles: ['GUIDE'] } as RouteMetaGuard,
+    },
+    {
+      path: '/admin/dashboard',
+      name: 'admin-dashboard',
+      component: AdminDashboardPage,
+      meta: { requiresAuth: true, roles: ['ADMIN'] } as RouteMetaGuard,
+    },
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: AdminUsersPage,
+      meta: { requiresAuth: true, roles: ['ADMIN'] } as RouteMetaGuard,
     },
     { path: '/tours', name: 'tours', component: ToursPage },
     { path: '/tours/:id', name: 'tour-details', component: TourDetailsPage },
