@@ -6,6 +6,9 @@ import { api, clearAuthToken, getAuthToken } from '../../api/client';
 import { createTravelerBooking } from '../../api/bookings';
 import { getStoredUserRole } from '../../api/auth';
 import { getTourById, tourImageUrl } from '../../api/tours';
+import { submitReview } from '../../api/reviews';
+import TourReviewForm from '../../components/TourReviewForm.vue';
+import StarRating from '../../components/common/StarRating.vue';
 import type { Tour } from '../../types/tours';
 
 const route = useRoute();
@@ -17,6 +20,11 @@ const tour = ref<Tour | null>(null);
 const selectedDate = ref('');
 const reserveError = ref<string | null>(null);
 const reserving = ref(false);
+
+// Review form state
+const showReviewModal = ref(false);
+const submittingReview = ref(false);
+const reviewSuccess = ref<string | null>(null);
 
 // Booking sidebar UI
 const travelers = ref(2);
@@ -172,6 +180,43 @@ async function handleReserveClick(): Promise<void> {
     reserveError.value = 'Could not continue booking right now. Please try again.';
   } finally {
     reserving.value = false;
+  }
+}
+
+async function handleSubmitReview(payload: { rating: number; comment: string }): Promise<void> {
+  if (!tour.value?.id || submittingReview.value) return;
+
+  try {
+    submittingReview.value = true;
+    reviewSuccess.value = null;
+
+    await submitReview({
+      tour_id: tour.value.id,
+      rating: payload.rating,
+      comment: payload.comment,
+    });
+
+    reviewSuccess.value = 'Thank you! Your review has been posted.';
+    showReviewModal.value = false;
+
+    // Refresh tour data to show new review.
+    tour.value = await getTourById(tourId.value);
+
+    setTimeout(() => {
+      reviewSuccess.value = null;
+    }, 3000);
+  } catch (e) {
+    const err = e as AxiosError;
+    const message = (err.response?.data as { message?: string } | undefined)?.message;
+
+    if (err.response?.status === 401) {
+      void router.push({ name: 'login', query: { redirect: route.fullPath } });
+      return;
+    }
+
+    reviewSuccess.value = message ?? 'Could not submit review. Please try again.';
+  } finally {
+    submittingReview.value = false;
   }
 }
 
@@ -337,6 +382,24 @@ onMounted(async () => {
             <div class="pt-8">
               <h2 class="mb-8 text-2xl font-bold">Traveler Experiences</h2>
 
+              <Transition name="success">
+                <div
+                  v-if="reviewSuccess"
+                  class="mb-6 rounded-2xl bg-secondary-container/70 px-6 py-4 text-sm font-medium text-secondary"
+                >
+                  {{ reviewSuccess }}
+                </div>
+              </Transition>
+
+              <button
+                type="button"
+                class="mb-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:brightness-110"
+                @click="showReviewModal = true"
+              >
+                <span class="material-symbols-outlined">rate_review</span>
+                Share Your Experience
+              </button>
+
               <div v-if="reviews.length === 0" class="rounded-2xl bg-surface-container-lowest p-6 text-slate-600">
                 No reviews yet.
               </div>
@@ -359,15 +422,7 @@ onMounted(async () => {
                         <p class="text-xs text-slate-400">{{ r.created_at ?? '' }}</p>
                       </div>
                     </div>
-                    <div class="flex text-tertiary">
-                      <span
-                        v-for="i in (r.rating ?? 5)"
-                        :key="i"
-                        class="material-symbols-outlined text-sm"
-                        style="font-variation-settings: 'FILL' 1"
-                        >star</span
-                      >
-                    </div>
+                    <StarRating :model-value="r.rating ?? 5" readonly size="sm" />
                   </div>
                   <p class="italic leading-relaxed text-slate-600">
                     “{{ r.comment ?? 'Amazing experience.' }}”
@@ -459,8 +514,48 @@ onMounted(async () => {
             </div>
           </aside>
         </div>
+
+        <TourReviewForm
+          v-model="showReviewModal"
+          :tour-title="tour?.title ?? 'Tour'"
+          :is-loading="submittingReview"
+          @submit="handleSubmitReview"
+        />
       </template>
     </main>
   </div>
 </template>
+
+<style scoped>
+/* Success message animation */
+.success-enter-active {
+  animation: slide-in 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.success-leave-active {
+  animation: slide-out 300ms ease;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+</style>
 
