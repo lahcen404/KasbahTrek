@@ -7,3 +7,23 @@ export type AdminDashboardStats = {
   pending_verifications: number;
   pending_trip_reports: number;
 };
+
+export type AdminUserRole = 'TRAVELER' | 'GUIDE' | 'ADMIN';
+
+export type AdminUser = {
+  id: number;
+  fullname: string;
+  email: string;
+  role: AdminUserRole;
+  is_verified?: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type UpdateAdminUserPayload = {
+  fullname?: string;
+  email?: string;
+  role?: AdminUserRole;
+  is_verified?: boolean;
+  password?: string;
+};

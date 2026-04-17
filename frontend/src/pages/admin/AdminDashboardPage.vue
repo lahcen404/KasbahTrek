@@ -74,11 +74,36 @@ const summaryCards = computed(() => [
 ]);
 
 const adminActions = [
-  { title: 'Manage Users', description: 'View, update, and remove travelers or guides.', icon: 'manage_accounts' },
-  { title: 'Manage Tours', description: 'Review tour listings and remove invalid content.', icon: 'tour' },
-  { title: 'Verify Guides', description: 'Approve or reject guide verification requests.', icon: 'verified_user' },
-  { title: 'Handle Reports', description: 'Review trip reports and update their status.', icon: 'flag' },
-  { title: 'View Statistics', description: 'Monitor bookings, revenue, and moderation tasks.', icon: 'insights' },
+  {
+    title: 'Manage Users',
+    description: 'View, update, and remove travelers or guides.',
+    icon: 'manage_accounts',
+    route: 'admin-users',
+  },
+  {
+    title: 'Manage Tours',
+    description: 'Review tour listings and remove invalid content.',
+    icon: 'tour',
+    route: null,
+  },
+  {
+    title: 'Verify Guides',
+    description: 'Approve or reject guide verification requests.',
+    icon: 'verified_user',
+    route: null,
+  },
+  {
+    title: 'Handle Reports',
+    description: 'Review trip reports and update their status.',
+    icon: 'flag',
+    route: null,
+  },
+  {
+    title: 'View Statistics',
+    description: 'Monitor bookings, revenue, and moderation tasks.',
+    icon: 'insights',
+    route: null,
+  },
 ] as const;
 
 async function loadDashboard(): Promise<void> {
@@ -98,8 +123,13 @@ async function loadDashboard(): Promise<void> {
   }
 }
 
-function openComingSoon(section: string): void {
-  error.value = `${section} management pages are next.`;
+function openAction(action: (typeof adminActions)[number]): void {
+  if (action.route) {
+    void router.push({ name: action.route });
+    return;
+  }
+
+  error.value = `${action.title} management pages are next.`;
 }
 
 onMounted(() => {
@@ -181,7 +211,7 @@ onMounted(() => {
                   :key="action.title"
                   type="button"
                   class="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4 text-left transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
-                  @click="openComingSoon(action.title)"
+                  @click="openAction(action)"
                 >
                   <div class="flex items-start gap-3">
                     <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
