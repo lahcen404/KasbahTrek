@@ -3,6 +3,8 @@ import type { Tour } from '../types/tours';
 import type {
   AdminCategory,
   AdminDashboardStats,
+  AdminTripReport,
+  AdminTripReportActionStatus,
   AdminUser,
   AdminVerification,
   AdminVerificationActionStatus,
@@ -47,6 +49,13 @@ type AdminCategoriesResponse = AdminCategory[];
 type AdminCategoryResponse = {
   message?: string;
   category: AdminCategory;
+};
+
+type AdminReportsResponse = AdminTripReport[];
+
+type AdminReportResponse = {
+  message?: string;
+  report: AdminTripReport;
 };
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
@@ -119,4 +128,17 @@ export async function updateAdminCategory(
 
 export async function deleteAdminCategory(categoryId: number): Promise<void> {
   await api.delete(`/admin/categories/${categoryId}`);
+}
+
+export async function getAdminReports(): Promise<AdminTripReport[]> {
+  const { data } = await api.get<AdminReportsResponse>('/admin/reports');
+  return Array.isArray(data) ? data : [];
+}
+
+export async function updateAdminReportStatus(
+  reportId: number,
+  status: AdminTripReportActionStatus,
+): Promise<AdminTripReport> {
+  const { data } = await api.patch<AdminReportResponse>(`/admin/reports/${reportId}/status`, { status });
+  return data.report;
 }

@@ -28,6 +28,7 @@ import AdminUsersPage from '../pages/admin/AdminUsersPage.vue';
 import AdminVerificationPage from '../pages/admin/AdminVerificationPage.vue';
 import AdminToursPage from '../pages/admin/AdminToursPage.vue';
 import AdminCategoriesPage from '../pages/admin/AdminCategoriesPage.vue';
+import AdminReportsPage from '../pages/admin/AdminReportsPage.vue';
 import ToursPage from '../pages/traveler/ToursPage.vue';
 import TourDetailsPage from '../pages/traveler/TourDetailsPage.vue';
 
@@ -151,6 +152,12 @@ const router = createRouter({
       path: '/admin/categories',
       name: 'admin-categories',
       component: AdminCategoriesPage,
+      meta: { requiresAuth: true, roles: ['ADMIN'] } as RouteMetaGuard,
+    },
+    {
+      path: '/admin/reports',
+      name: 'admin-reports',
+      component: AdminReportsPage,
       meta: { requiresAuth: true, roles: ['ADMIN'] } as RouteMetaGuard,
     },
     { path: '/tours', name: 'tours', component: ToursPage },

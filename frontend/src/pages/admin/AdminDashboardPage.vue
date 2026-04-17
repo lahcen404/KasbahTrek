@@ -102,7 +102,7 @@ const adminActions = [
     title: 'Handle Reports',
     description: 'Review trip reports and update their status.',
     icon: 'flag',
-    route: null,
+    route: 'admin-reports',
   },
   {
     title: 'View Statistics',
