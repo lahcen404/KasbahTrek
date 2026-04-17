@@ -73,6 +73,8 @@ Route::middleware(['auth.custom', 'role:TRAVELER'])->group(function () {
     Route::delete('/favorites/{tourId}', [FavoriteController::class, 'remove']);
 
     Route::post('/reviews', [ReviewController::class, 'add']);
+    Route::put('/reviews/{id}', [ReviewController::class, 'update']);
+    Route::delete('/reviews/{id}', [ReviewController::class, 'delete']);
     Route::get('/my-reviews', [ReviewController::class, 'myReviews']);
 
     Route::post('/reports', [TripReportController::class, 'store']);

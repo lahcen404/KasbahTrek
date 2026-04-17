@@ -74,4 +74,37 @@ class ReviewRepository implements ReviewRepositoryInterface
             'comment' => $data['comment'],
         ]);
     }
+
+    public function update(int $travelerId, int $reviewId, array $data): Review
+    {
+        $review = Review::query()
+            ->where('id', $reviewId)
+            ->where('traveler_id', $travelerId)
+            ->first();
+
+        if (! $review) {
+            throw new \InvalidArgumentException('Review not found or not owned by you.');
+        }
+
+        $review->update([
+            'rating' => (int) $data['rating'],
+            'comment' => $data['comment'],
+        ]);
+
+        return $review->fresh(['tour', 'traveler']);
+    }
+
+    public function delete(int $travelerId, int $reviewId): void
+    {
+        $review = Review::query()
+            ->where('id', $reviewId)
+            ->where('traveler_id', $travelerId)
+            ->first();
+
+        if (! $review) {
+            throw new \InvalidArgumentException('Review not found or not owned by you.');
+        }
+
+        $review->delete();
+    }
 }

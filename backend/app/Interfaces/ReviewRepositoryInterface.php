@@ -14,4 +14,8 @@ interface ReviewRepositoryInterface
     public function getTourReviews(int $tourId): Collection;
 
     public function add(int $travelerId, array $data): Review;
+
+    public function update(int $travelerId, int $reviewId, array $data): Review;
+
+    public function delete(int $travelerId, int $reviewId): void;
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { getMyReviews } from '../../api/reviews';
+import { deleteReview, getMyReviews, updateReview } from '../../api/reviews';
 import StarRating from '../../components/common/StarRating.vue';
 import type { Review } from '../../types/reviews';
 
@@ -11,6 +11,11 @@ const route = useRoute();
 const loading = ref(true);
 const error = ref<string | null>(null);
 const reviews = ref<Review[]>([]);
+const activeEditId = ref<number | null>(null);
+const editRating = ref<number>(0);
+const editComment = ref<string>('');
+const actionLoadingId = ref<number | null>(null);
+const actionMessage = ref<string | null>(null);
 
 const travelerNavItems = [
   { key: 'traveler-profile', label: 'Dashboard', icon: 'dashboard' },
@@ -53,6 +58,71 @@ function reviewDateLabel(value: string | undefined): string {
     month: 'short',
     day: 'numeric',
   }).format(d);
+}
+
+function startEdit(review: Review): void {
+  activeEditId.value = review.id;
+  editRating.value = review.rating ?? 0;
+  editComment.value = review.comment ?? '';
+  actionMessage.value = null;
+}
+
+function cancelEdit(): void {
+  activeEditId.value = null;
+  editRating.value = 0;
+  editComment.value = '';
+}
+
+async function saveEdit(reviewId: number): Promise<void> {
+  if (actionLoadingId.value !== null) return;
+  if (editRating.value < 1 || editComment.value.trim().length === 0) {
+    actionMessage.value = 'Rating and comment are required.';
+    return;
+  }
+
+  actionLoadingId.value = reviewId;
+  actionMessage.value = null;
+
+  try {
+    const updated = await updateReview(reviewId, {
+      rating: editRating.value,
+      comment: editComment.value.trim(),
+    });
+
+    const index = reviews.value.findIndex((item) => item.id === reviewId);
+    if (index >= 0) {
+      reviews.value[index] = updated;
+    }
+
+    cancelEdit();
+    actionMessage.value = 'Review updated successfully.';
+  } catch {
+    actionMessage.value = 'Could not update review right now.';
+  } finally {
+    actionLoadingId.value = null;
+  }
+}
+
+async function removeReview(reviewId: number): Promise<void> {
+  if (actionLoadingId.value !== null) return;
+  const confirmed = window.confirm('Delete this review? This action cannot be undone.');
+  if (!confirmed) return;
+
+  actionLoadingId.value = reviewId;
+  actionMessage.value = null;
+
+  try {
+    await deleteReview(reviewId);
+    reviews.value = reviews.value.filter((item) => item.id !== reviewId);
+    if (activeEditId.value === reviewId) {
+      cancelEdit();
+    }
+    actionMessage.value = 'Review deleted successfully.';
+  } catch {
+    actionMessage.value = 'Could not delete review right now.';
+  } finally {
+    actionLoadingId.value = null;
+  }
 }
 
 onMounted(async () => {
@@ -117,6 +187,13 @@ onMounted(async () => {
             {{ error }}
           </div>
 
+          <div
+            v-if="!error && actionMessage"
+            class="relative mb-6 rounded-xl bg-secondary-container/70 px-4 py-3 text-sm font-medium text-secondary"
+          >
+            {{ actionMessage }}
+          </div>
+
           <div v-if="loading" class="relative space-y-4">
             <div v-for="i in 4" :key="i" class="h-36 animate-pulse rounded-2xl bg-surface-container" />
           </div>
@@ -160,7 +237,35 @@ onMounted(async () => {
                 {{ review.comment }}
               </p>
 
-              <div class="mt-4">
+              <div v-if="activeEditId === review.id" class="mt-4 space-y-3 rounded-xl bg-surface-container-low p-4">
+                <StarRating v-model="editRating" size="sm" />
+                <textarea
+                  v-model="editComment"
+                  rows="3"
+                  class="w-full rounded-xl border border-outline-variant/30 bg-surface px-3 py-2 text-sm text-on-surface outline-none focus:border-primary"
+                  maxlength="1000"
+                />
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    class="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-on-primary transition hover:brightness-110 disabled:opacity-50"
+                    :disabled="actionLoadingId === review.id"
+                    @click="saveEdit(review.id)"
+                  >
+                    {{ actionLoadingId === review.id ? 'Saving...' : 'Save' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-full border border-outline-variant/30 px-4 py-2 text-xs font-semibold text-on-surface-variant transition hover:border-primary/40"
+                    :disabled="actionLoadingId === review.id"
+                    @click="cancelEdit"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-4 flex flex-wrap items-center gap-3">
                 <RouterLink
                   :to="{ name: 'tour-details', params: { id: review.tour_id } }"
                   class="inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:opacity-80"
@@ -168,6 +273,24 @@ onMounted(async () => {
                   View Tour
                   <span class="material-symbols-outlined text-base">arrow_forward</span>
                 </RouterLink>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-sm font-semibold text-on-surface-variant transition hover:text-primary"
+                  :disabled="actionLoadingId === review.id"
+                  @click="startEdit(review)"
+                >
+                  <span class="material-symbols-outlined text-base">edit</span>
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-sm font-semibold text-error transition hover:opacity-80"
+                  :disabled="actionLoadingId === review.id"
+                  @click="removeReview(review.id)"
+                >
+                  <span class="material-symbols-outlined text-base">delete</span>
+                  Delete
+                </button>
               </div>
             </article>
           </div>

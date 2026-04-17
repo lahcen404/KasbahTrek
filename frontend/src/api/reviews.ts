@@ -37,3 +37,24 @@ export async function getMyReviews(): Promise<Review[]> {
   
   return data.reviews ?? [];
 }
+
+/**
+ * Update an existing review.
+ * PUT /api/reviews/:id
+ */
+export async function updateReview(
+  reviewId: number,
+  payload: { rating: number; comment: string },
+): Promise<Review> {
+  const { data } = await api.put<SubmitReviewResponse>(`/reviews/${reviewId}`, payload);
+  return data.review;
+}
+
+/**
+ * Delete an existing review.
+ * DELETE /api/reviews/:id
+ */
+export async function deleteReview(reviewId: number): Promise<{ message?: string }> {
+  const { data } = await api.delete<{ message?: string }>(`/reviews/${reviewId}`);
+  return data;
+}
