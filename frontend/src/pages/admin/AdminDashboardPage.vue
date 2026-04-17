@@ -84,7 +84,7 @@ const adminActions = [
     title: 'Manage Tours',
     description: 'Review tour listings and remove invalid content.',
     icon: 'tour',
-    route: null,
+    route: 'admin-tours',
   },
   {
     title: 'Verify Guides',

@@ -1,4 +1,5 @@
 import { api } from './client';
+import type { Tour } from '../types/tours';
 import type {
   AdminDashboardStats,
   AdminUser,
@@ -32,6 +33,11 @@ type AdminVerificationResponse = {
   status?: string;
   message?: string;
   data: AdminVerification;
+};
+
+type AdminToursResponse = {
+  status?: string;
+  data: Tour[];
 };
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
@@ -73,4 +79,13 @@ export async function updateAdminVerificationStatus(
   );
 
   return data.data;
+}
+
+export async function getAdminTours(): Promise<Tour[]> {
+  const { data } = await api.get<AdminToursResponse>('/admin/tours');
+  return data.data;
+}
+
+export async function deleteAdminTour(tourId: number): Promise<void> {
+  await api.delete(`/admin/tours/${tourId}`);
 }
