@@ -3,10 +3,14 @@ import type { AxiosError } from 'axios';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api, clearAuthToken, getAuthToken } from '../../api/client';
-import { createTravelerBooking } from '../../api/bookings';
-import { getStoredUserRole } from '../../api/auth';
+import { createTravelerBooking, getTravelerBookings } from '../../api/bookings';
+import { getCurrentUser, getStoredUserRole } from '../../api/auth';
 import { getTourById, tourImageUrl } from '../../api/tours';
-import type { Tour } from '../../types/tours';
+import { deleteReview, submitReview, updateReview } from '../../api/reviews';
+import TourReviewForm from '../../components/TourReviewForm.vue';
+import StarRating from '../../components/common/StarRating.vue';
+import type { TravelerBooking } from '../../types/traveler';
+import type { Tour, TourReview } from '../../types/tours';
 
 const route = useRoute();
 const router = useRouter();
@@ -17,6 +21,18 @@ const tour = ref<Tour | null>(null);
 const selectedDate = ref('');
 const reserveError = ref<string | null>(null);
 const reserving = ref(false);
+
+// Review form state
+const showReviewModal = ref(false);
+const submittingReview = ref(false);
+const reviewSuccess = ref<string | null>(null);
+const activeEditReviewId = ref<number | null>(null);
+const editReviewRating = ref<number>(0);
+const editReviewComment = ref('');
+const reviewActionLoadingId = ref<number | null>(null);
+const reviewGuardLoading = ref(false);
+const travelerBookings = ref<TravelerBooking[]>([]);
+const currentTravelerId = ref<number | null>(null);
 
 // Booking sidebar UI
 const travelers = ref(2);
@@ -68,6 +84,38 @@ const ratingAvg = computed(() => {
   return null;
 });
 const reviewsCount = computed(() => tour.value?.reviews_count ?? reviews.value.length);
+const isTraveler = computed(() => getStoredUserRole()?.toUpperCase() === 'TRAVELER');
+const hasValidSessionToken = computed(() => {
+  const token = getAuthToken();
+  return typeof token === 'string' && token.trim() !== '' && token !== 'null' && token !== 'undefined';
+});
+const hasConfirmedPaidBookingForTour = computed(() => {
+  if (!tour.value?.id) return false;
+  return travelerBookings.value.some(
+    (booking) =>
+      booking.tour_id === tour.value?.id &&
+      booking.status === 'CONFIRMED' &&
+      booking.payment_status === 'PAID',
+  );
+});
+const hasAlreadyReviewedTour = computed(() => {
+  if (!currentTravelerId.value) return false;
+  return reviews.value.some((review) => review.traveler?.id === currentTravelerId.value);
+});
+const canShareExperience = computed(
+  () =>
+    isTraveler.value &&
+    hasValidSessionToken.value &&
+    hasConfirmedPaidBookingForTour.value &&
+    !hasAlreadyReviewedTour.value,
+);
+const reviewEligibilityHint = computed(() => {
+  if (!hasValidSessionToken.value) return 'Log in as traveler to share your review.';
+  if (!isTraveler.value) return 'Only traveler accounts can post reviews.';
+  if (hasAlreadyReviewedTour.value) return 'You already reviewed this tour.';
+  if (!hasConfirmedPaidBookingForTour.value) return 'Review opens after your booking is confirmed and paid.';
+  return null;
+});
 const minDate = computed(() => {
   const d = new Date();
   d.setDate(d.getDate() + 1);
@@ -175,6 +223,137 @@ async function handleReserveClick(): Promise<void> {
   }
 }
 
+async function handleSubmitReview(payload: { rating: number; comment: string }): Promise<void> {
+  if (!tour.value?.id || submittingReview.value || !canShareExperience.value) return;
+
+  try {
+    submittingReview.value = true;
+    reviewSuccess.value = null;
+
+    await submitReview({
+      tour_id: tour.value.id,
+      rating: payload.rating,
+      comment: payload.comment,
+    });
+
+    reviewSuccess.value = 'Thank you! Your review has been posted.';
+    showReviewModal.value = false;
+
+    // Refresh tour data to show new review.
+    tour.value = await getTourById(tourId.value);
+
+    setTimeout(() => {
+      reviewSuccess.value = null;
+    }, 3000);
+  } catch (e) {
+    const err = e as AxiosError;
+    const message = (err.response?.data as { message?: string } | undefined)?.message;
+
+    if (err.response?.status === 401) {
+      void router.push({ name: 'login', query: { redirect: route.fullPath } });
+      return;
+    }
+
+    reviewSuccess.value = message ?? 'Could not submit review. Please try again.';
+  } finally {
+    submittingReview.value = false;
+  }
+}
+
+function openReviewModal(): void {
+  if (!canShareExperience.value) {
+    reviewSuccess.value = reviewEligibilityHint.value ?? 'You are not eligible to review this tour yet.';
+    return;
+  }
+
+  showReviewModal.value = true;
+}
+
+function isOwnReview(review: TourReview): boolean {
+  if (!currentTravelerId.value) return false;
+  return review.traveler?.id === currentTravelerId.value || review.user?.id === currentTravelerId.value;
+}
+
+function startEditReview(review: TourReview): void {
+  if (!isOwnReview(review)) return;
+  activeEditReviewId.value = review.id;
+  editReviewRating.value = review.rating ?? 0;
+  editReviewComment.value = review.comment ?? '';
+  reviewSuccess.value = null;
+}
+
+function cancelEditReview(): void {
+  activeEditReviewId.value = null;
+  editReviewRating.value = 0;
+  editReviewComment.value = '';
+}
+
+async function saveReviewUpdate(reviewId: number): Promise<void> {
+  if (reviewActionLoadingId.value !== null || editReviewRating.value < 1 || editReviewComment.value.trim().length === 0) {
+    if (editReviewRating.value < 1 || editReviewComment.value.trim().length === 0) {
+      reviewSuccess.value = 'Rating and comment are required.';
+    }
+    return;
+  }
+
+  try {
+    reviewActionLoadingId.value = reviewId;
+    reviewSuccess.value = null;
+
+    await updateReview(reviewId, {
+      rating: editReviewRating.value,
+      comment: editReviewComment.value.trim(),
+    });
+
+    tour.value = await getTourById(tourId.value);
+    cancelEditReview();
+    reviewSuccess.value = 'Review updated successfully.';
+  } catch (e) {
+    const err = e as AxiosError;
+    const message = (err.response?.data as { message?: string } | undefined)?.message;
+    reviewSuccess.value = message ?? 'Could not update review right now.';
+  } finally {
+    reviewActionLoadingId.value = null;
+  }
+}
+
+async function removeReviewFromTour(reviewId: number): Promise<void> {
+  if (reviewActionLoadingId.value !== null) return;
+  const confirmed = window.confirm('Delete this review? This action cannot be undone.');
+  if (!confirmed) return;
+
+  try {
+    reviewActionLoadingId.value = reviewId;
+    reviewSuccess.value = null;
+
+    await deleteReview(reviewId);
+    tour.value = await getTourById(tourId.value);
+    cancelEditReview();
+    reviewSuccess.value = 'Review deleted successfully.';
+  } catch (e) {
+    const err = e as AxiosError;
+    const message = (err.response?.data as { message?: string } | undefined)?.message;
+    reviewSuccess.value = message ?? 'Could not delete review right now.';
+  } finally {
+    reviewActionLoadingId.value = null;
+  }
+}
+
+async function loadReviewEligibility(): Promise<void> {
+  if (!hasValidSessionToken.value || !isTraveler.value || !tour.value?.id) return;
+
+  reviewGuardLoading.value = true;
+  try {
+    const [me, bookings] = await Promise.all([getCurrentUser(), getTravelerBookings()]);
+    currentTravelerId.value = typeof me.id === 'number' ? me.id : null;
+    travelerBookings.value = bookings;
+  } catch {
+    travelerBookings.value = [];
+  } finally {
+    reviewGuardLoading.value = false;
+  }
+}
+
 onMounted(async () => {
   loading.value = true;
   error.value = null;
@@ -186,6 +365,7 @@ onMounted(async () => {
     if (tour.value?.date) {
       selectedDate.value = String(tour.value.date).slice(0, 10);
     }
+    await loadReviewEligibility();
   } catch {
     error.value = 'Could not load this tour. Please go back and try again.';
     tour.value = null;
@@ -337,6 +517,36 @@ onMounted(async () => {
             <div class="pt-8">
               <h2 class="mb-8 text-2xl font-bold">Traveler Experiences</h2>
 
+              <Transition name="success">
+                <div
+                  v-if="reviewSuccess"
+                  class="mb-6 rounded-2xl bg-secondary-container/70 px-6 py-4 text-sm font-medium text-secondary"
+                >
+                  {{ reviewSuccess }}
+                </div>
+              </Transition>
+
+              <button
+                type="button"
+                class="mb-2 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition"
+                :class="
+                  canShareExperience
+                    ? 'bg-primary text-on-primary hover:brightness-110'
+                    : 'cursor-not-allowed bg-surface-container-high text-on-surface-variant'
+                "
+                :disabled="!canShareExperience"
+                @click="openReviewModal"
+              >
+                <span class="material-symbols-outlined">rate_review</span>
+                Share Your Experience
+              </button>
+              <p
+                v-if="reviewGuardLoading || reviewEligibilityHint"
+                class="mb-6 text-sm text-on-surface-variant"
+              >
+                {{ reviewGuardLoading ? 'Checking your review eligibility...' : reviewEligibilityHint }}
+              </p>
+
               <div v-if="reviews.length === 0" class="rounded-2xl bg-surface-container-lowest p-6 text-slate-600">
                 No reviews yet.
               </div>
@@ -359,19 +569,60 @@ onMounted(async () => {
                         <p class="text-xs text-slate-400">{{ r.created_at ?? '' }}</p>
                       </div>
                     </div>
-                    <div class="flex text-tertiary">
-                      <span
-                        v-for="i in (r.rating ?? 5)"
-                        :key="i"
-                        class="material-symbols-outlined text-sm"
-                        style="font-variation-settings: 'FILL' 1"
-                        >star</span
-                      >
-                    </div>
+                    <StarRating :model-value="r.rating ?? 5" readonly size="sm" />
                   </div>
                   <p class="italic leading-relaxed text-slate-600">
                     “{{ r.comment ?? 'Amazing experience.' }}”
                   </p>
+
+                  <div v-if="activeEditReviewId === r.id" class="mt-4 space-y-3 rounded-xl bg-surface-container-low p-4">
+                    <StarRating v-model="editReviewRating" size="sm" />
+                    <textarea
+                      v-model="editReviewComment"
+                      rows="3"
+                      class="w-full rounded-xl border border-outline-variant/30 bg-surface px-3 py-2 text-sm text-on-surface outline-none focus:border-primary"
+                      maxlength="1000"
+                    />
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        class="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-on-primary transition hover:brightness-110 disabled:opacity-50"
+                        :disabled="reviewActionLoadingId === r.id"
+                        @click="saveReviewUpdate(r.id)"
+                      >
+                        {{ reviewActionLoadingId === r.id ? 'Saving...' : 'Save' }}
+                      </button>
+                      <button
+                        type="button"
+                        class="rounded-full border border-outline-variant/30 px-4 py-2 text-xs font-semibold text-on-surface-variant transition hover:border-primary/40"
+                        :disabled="reviewActionLoadingId === r.id"
+                        @click="cancelEditReview"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+
+                  <div v-if="isOwnReview(r)" class="mt-4 flex items-center gap-3">
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-1 text-sm font-semibold text-on-surface-variant transition hover:text-primary"
+                      :disabled="reviewActionLoadingId === r.id"
+                      @click="startEditReview(r)"
+                    >
+                      <span class="material-symbols-outlined text-base">edit</span>
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-1 text-sm font-semibold text-error transition hover:opacity-80"
+                      :disabled="reviewActionLoadingId === r.id"
+                      @click="removeReviewFromTour(r.id)"
+                    >
+                      <span class="material-symbols-outlined text-base">delete</span>
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -459,8 +710,48 @@ onMounted(async () => {
             </div>
           </aside>
         </div>
+
+        <TourReviewForm
+          v-model="showReviewModal"
+          :tour-title="tour?.title ?? 'Tour'"
+          :is-loading="submittingReview"
+          @submit="handleSubmitReview"
+        />
       </template>
     </main>
   </div>
 </template>
+
+<style scoped>
+/* Success message animation */
+.success-enter-active {
+  animation: slide-in 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.success-leave-active {
+  animation: slide-out 300ms ease;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+</style>
 

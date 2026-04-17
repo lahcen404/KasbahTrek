@@ -64,6 +64,7 @@ const travelerNavItems = [
   { key: 'traveler-profile', label: 'Dashboard', icon: 'dashboard' },
   { key: 'traveler-bookings', label: 'Bookings', icon: 'event_note' },
   { key: 'traveler-favorites', label: 'Favorites', icon: 'favorite' },
+  { key: 'traveler-reviews', label: 'Reviews', icon: 'reviews' },
 ] as const;
 
 function isNavActive(key: string): boolean {
