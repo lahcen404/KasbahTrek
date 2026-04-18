@@ -15,7 +15,7 @@ class StoreBookingRequest extends FormRequest
     {
         return [
             'tour_id' => 'required|exists:tours,id',
-            'date' => 'required|date|after:today',
+            'date' => 'required|date_format:Y-m-d',
         ];
     }
 }
