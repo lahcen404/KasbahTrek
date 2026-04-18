@@ -12,13 +12,20 @@ const error = ref<string | null>(null);
 const adminName = ref('Admin');
 const stats = ref<AdminDashboardStats | null>(null);
 
-function money(value: number | null | undefined): string {
-  const amount = typeof value === 'number' ? value : 0;
+function money(value: number | string | null | undefined): string {
+  const amount = typeof value === 'number'
+    ? value
+    : typeof value === 'string'
+      ? Number.parseFloat(value)
+      : 0;
+
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
+
   return new Intl.NumberFormat('en-MA', {
     style: 'currency',
     currency: 'MAD',
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(safeAmount);
 }
 
 const summaryCards = computed(() => [
@@ -108,7 +115,7 @@ const adminActions = [
     title: 'View Statistics',
     description: 'Monitor bookings, revenue, and moderation tasks.',
     icon: 'insights',
-    route: null,
+    route: 'admin-dashboard',
   },
 ] as const;
 
@@ -130,12 +137,7 @@ async function loadDashboard(): Promise<void> {
 }
 
 function openAction(action: (typeof adminActions)[number]): void {
-  if (action.route) {
-    void router.push({ name: action.route });
-    return;
-  }
-
-  error.value = `${action.title} management pages are next.`;
+  void router.push({ name: action.route });
 }
 
 onMounted(() => {
