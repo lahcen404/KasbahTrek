@@ -84,15 +84,15 @@ function goToTravelerRoute(key: string): void {
 <template>
   <div class="min-h-screen bg-surface text-on-surface">
     <main class="mx-auto max-w-7xl px-5 pb-16 pt-24 sm:px-8">
-      <div class="grid gap-6 lg:grid-cols-[16rem,1fr]">
+      <div class="grid gap-6 grid-cols-1 lg:grid-cols-[16rem,1fr]">
       <aside class="h-fit rounded-3xl border border-outline-variant/20 bg-surface-container-low p-4 lg:sticky lg:top-24">
         <p class="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Traveler Dashboard</p>
-        <nav class="mt-3 flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+        <nav class="mt-3 flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:gap-2 lg:overflow-visible lg:pb-0">
           <button
             v-for="item in travelerNavItems"
             :key="item.key"
             type="button"
-            class="inline-flex min-w-max items-center gap-2 rounded-full px-4 py-3 text-sm font-bold transition-all lg:w-full"
+            class="inline-flex items-center gap-2 rounded-full px-3 py-2 lg:px-4 lg:py-3 text-xs lg:text-sm font-bold transition-all lg:w-full shrink-0 lg:shrink"
             :class="
               isNavActive(item.key)
                 ? 'bg-orange-700 text-white'
@@ -101,11 +101,11 @@ function goToTravelerRoute(key: string): void {
             @click="goToTravelerRoute(item.key)"
           >
             <span class="material-symbols-outlined text-base">{{ item.icon }}</span>
-            <span>{{ item.label }}</span>
+            <span class="hidden lg:inline">{{ item.label }}</span>
           </button>
         </nav>
       </aside>
-      <section class="relative overflow-hidden rounded-3xl border border-outline-variant/20 bg-surface-container-low p-6 sm:p-8">
+      <section class="relative overflow-hidden rounded-3xl border border-outline-variant/20 bg-surface-container-low p-5 sm:p-8">
         <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-2xl" />
         <div class="pointer-events-none absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-tertiary/10 blur-2xl" />
 
@@ -129,15 +129,14 @@ function goToTravelerRoute(key: string): void {
               </span>
             </div>
 
-            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <div class="mt-4 grid gap-3 grid-cols-1 sm:grid-cols-2">
               <article
                 v-for="(image, index) in profileGalleryImages"
                 :key="image.src"
-                class="gallery-item photo-frame overflow-hidden rounded-l border border-outline-variant/20 bg-surface-container"
+                class="gallery-item photo-frame overflow-hidden rounded-lg border border-outline-variant/20 bg-surface-container"
                 :style="{ animationDelay: `${index * 80}ms` }"
               >
-                <img :src="image.src" :alt="image.alt" class="h-40 w-full object-cover sm:h-48" loading="lazy" />
-                
+                <img :src="image.src" :alt="image.alt" class="h-32 w-full object-cover sm:h-48" loading="lazy" />
               </article>
             </div>
           </div>
@@ -149,18 +148,18 @@ function goToTravelerRoute(key: string): void {
             </p>
 
             <div v-else class="space-y-6">
-              <div class="profile-id-card flex items-center gap-4 rounded-2xl border border-outline-variant/20 bg-surface-container p-4">
+              <div class="profile-id-card flex flex-col gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container p-4 sm:flex-row sm:items-center sm:gap-4">
                 <div
                   class="initials-badge inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-lg font-bold text-primary"
                 >
                   {{ initials }}
                 </div>
-                <div class="min-w-0">
+                <div class="min-w-0 flex-1">
                   <p class="truncate text-lg font-semibold">{{ fullname }}</p>
                   <p class="truncate text-sm text-on-surface-variant">{{ email || 'No email available' }}</p>
                 </div>
                 <span
-                  class="ml-auto inline-flex shrink-0 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
+                  class="inline-flex w-fit shrink-0 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
                 >
                   {{ role }}
                 </span>

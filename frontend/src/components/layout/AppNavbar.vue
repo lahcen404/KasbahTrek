@@ -113,18 +113,6 @@ watch(
           "
           >Tours</RouterLink
         >
-        <a
-          class="text-slate-600 transition-colors hover:text-orange-800 dark:text-slate-400"
-          href="#"
-        >How it works</a>
-        <a
-          class="text-slate-600 transition-colors hover:text-orange-800 dark:text-slate-400"
-          href="#"
-        >Guides</a>
-        <a
-          class="text-slate-600 transition-colors hover:text-orange-800 dark:text-slate-400"
-          href="#"
-        >About</a>
       </div>
 
       <div class="flex items-center gap-4">
@@ -189,15 +177,6 @@ watch(
               :to="{ name: 'tours' }"
               class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low"
               >Tours</RouterLink
-            >
-            <a class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low" href="#"
-              >How it works</a
-            >
-            <a class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low" href="#"
-              >Guides</a
-            >
-            <a class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low" href="#"
-              >About</a
             >
           </div>
 
