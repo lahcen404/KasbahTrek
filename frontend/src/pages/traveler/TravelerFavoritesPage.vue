@@ -106,17 +106,17 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-full bg-surface">
-    <section class="mx-auto w-full max-w-7xl px-6 pb-16 pt-12">
-      <div class="grid gap-6 lg:grid-cols-[16rem,1fr]">
+  <div class="min-h-screen bg-surface text-on-surface">
+    <section class="mx-auto w-full max-w-7xl px-5 pb-16 pt-24 sm:px-8">
+      <div class="grid gap-6 grid-cols-1 lg:grid-cols-[16rem,1fr]">
       <aside class="h-fit rounded-3xl border border-outline-variant/20 bg-surface-container-low p-4 lg:sticky lg:top-24">
         <p class="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Traveler Dashboard</p>
-        <nav class="mt-3 flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+        <nav class="mt-3 flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:gap-2 lg:overflow-visible lg:pb-0">
           <button
             v-for="item in travelerNavItems"
             :key="item.key"
             type="button"
-            class="inline-flex min-w-max items-center gap-2 rounded-full px-4 py-3 text-sm font-bold transition-all lg:w-full"
+            class="inline-flex items-center gap-2 rounded-full px-3 py-2 lg:px-4 lg:py-3 text-xs lg:text-sm font-bold transition-all lg:w-full shrink-0 lg:shrink"
             :class="
               isNavActive(item.key)
                 ? 'bg-orange-700 text-white'
@@ -125,21 +125,21 @@ onMounted(async () => {
             @click="goToTravelerRoute(item.key)"
           >
             <span class="material-symbols-outlined text-base">{{ item.icon }}</span>
-            <span>{{ item.label }}</span>
+            <span class="hidden lg:inline">{{ item.label }}</span>
           </button>
         </nav>
       </aside>
       <div>
-      <header class="mb-10 flex flex-wrap items-end justify-between gap-4">
+      <header class="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <p class="text-xs font-bold uppercase tracking-[0.18em] text-primary">Traveler</p>
-          <h1 class="mt-2 font-headline text-4xl font-bold tracking-tight text-on-surface">My Favorites</h1>
+          <h1 class="mt-2 font-headline text-3xl sm:text-4xl font-bold tracking-tight text-on-surface">My Favorites</h1>
           <p class="mt-2 text-on-surface-variant">All tours you saved for later.</p>
         </div>
 
         <RouterLink
           :to="{ name: 'tours' }"
-          class="inline-flex items-center gap-2 rounded-full border border-outline-variant/30 px-5 py-3 text-sm font-semibold text-on-surface transition hover:border-primary hover:text-primary"
+          class="inline-flex w-fit items-center gap-2 rounded-full border border-outline-variant/30 px-5 py-3 text-sm font-semibold text-on-surface transition hover:border-primary hover:text-primary"
         >
           <span class="material-symbols-outlined text-lg">travel_explore</span>
           Browse More Tours
@@ -183,7 +183,7 @@ onMounted(async () => {
         </RouterLink>
       </div>
 
-      <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div v-else class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
         <article
           v-for="tour in favoriteTours"
           :key="tour.id"
@@ -222,23 +222,23 @@ onMounted(async () => {
             </button>
           </div>
 
-          <div class="p-5">
-            <h3 class="line-clamp-1 text-xl font-bold text-on-surface">{{ tour.title }}</h3>
+          <div class="p-4 sm:p-5">
+            <h3 class="line-clamp-1 text-lg sm:text-xl font-bold text-on-surface">{{ tour.title }}</h3>
 
-            <div class="mt-2 flex items-center gap-3 text-sm text-on-surface-variant">
-              <span class="inline-flex items-center gap-1">
+            <div class="mt-2 flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-on-surface-variant">
+              <span class="inline-flex min-w-0 items-center gap-1">
                 <span class="material-symbols-outlined text-base">location_on</span>
-                {{ tour.location ?? 'Morocco' }}
+                <span class="truncate">{{ tour.location ?? 'Morocco' }}</span>
               </span>
-              <span class="inline-flex items-center gap-1">
+              <span class="inline-flex items-center gap-1 shrink-0">
                 <span class="material-symbols-outlined text-base">schedule</span>
                 {{ durationLabel(tour) }}
               </span>
             </div>
 
-            <div class="mt-5 flex items-center justify-between border-t border-surface-container-high pt-4">
+            <div class="mt-5 flex items-center justify-between gap-3 border-t border-surface-container-high pt-4">
               <p class="text-sm font-semibold text-on-surface-variant">
-                From <span class="text-xl font-bold text-primary">{{ money(tour.price) }}</span>
+                From <span class="text-lg sm:text-xl font-bold text-primary">{{ money(tour.price) }}</span>
               </p>
               <RouterLink
                 :to="{ name: 'tour-details', params: { id: tour.id } }"

@@ -97,15 +97,15 @@ onMounted(async () => {
 <template>
   <div class="min-h-screen bg-surface text-on-surface">
     <main class="mx-auto max-w-7xl px-5 pb-16 pt-24 sm:px-8">
-      <div class="grid gap-6 lg:grid-cols-[16rem,1fr]">
+      <div class="grid gap-6 grid-cols-1 lg:grid-cols-[16rem,1fr]">
         <aside class="h-fit rounded-3xl border border-outline-variant/20 bg-surface-container-low p-4 lg:sticky lg:top-24">
           <p class="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Traveler Dashboard</p>
-          <nav class="mt-3 flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+          <nav class="mt-3 flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:gap-2 lg:overflow-visible lg:pb-0">
             <button
               v-for="item in travelerNavItems"
               :key="item.key"
               type="button"
-              class="inline-flex min-w-max items-center gap-2 rounded-full px-4 py-3 text-sm font-bold transition-all lg:w-full"
+              class="inline-flex items-center gap-2 rounded-full px-3 py-2 lg:px-4 lg:py-3 text-xs lg:text-sm font-bold transition-all lg:w-full shrink-0 lg:shrink"
               :class="
                 isNavActive(item.key)
                   ? 'bg-orange-700 text-white'
@@ -114,16 +114,16 @@ onMounted(async () => {
               @click="goToTravelerRoute(item.key)"
             >
               <span class="material-symbols-outlined text-base">{{ item.icon }}</span>
-              <span>{{ item.label }}</span>
+              <span class="hidden lg:inline">{{ item.label }}</span>
             </button>
           </nav>
         </aside>
 
-        <section class="relative overflow-hidden rounded-3xl border border-outline-variant/20 bg-surface-container-low p-6 sm:p-8">
+        <section class="relative overflow-hidden rounded-3xl border border-outline-variant/20 bg-surface-container-low p-5 sm:p-8">
           <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-2xl" />
           <div class="pointer-events-none absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-tertiary/10 blur-2xl" />
 
-          <header class="relative mb-8 flex flex-wrap items-end justify-between gap-4">
+          <header class="relative mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Traveler Dashboard</p>
               <h1 class="mt-3 text-3xl font-headline font-bold sm:text-4xl">My Reports</h1>
@@ -132,7 +132,7 @@ onMounted(async () => {
               </p>
             </div>
 
-            <span class="rounded-full border border-outline-variant/30 px-4 py-2 text-sm font-semibold text-on-surface-variant">
+            <span class="w-fit rounded-full border border-outline-variant/30 px-4 py-2 text-sm font-semibold text-on-surface-variant shrink-0">
               {{ sortedReports.length }} total
             </span>
           </header>
@@ -168,13 +168,13 @@ onMounted(async () => {
               :key="report.id"
               class="rounded-2xl border border-outline-variant/20 bg-surface p-5 shadow-sm"
             >
-              <div class="flex flex-wrap items-start justify-between gap-3">
-                <div class="flex-1">
+              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div class="flex-1 min-w-0">
                   <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Reported Tour</p>
-                  <h3 class="mt-1 text-lg font-bold text-on-surface">{{ reportTourLabel(report) }}</h3>
+                  <h3 class="mt-1 text-lg font-bold text-on-surface truncate">{{ reportTourLabel(report) }}</h3>
                 </div>
 
-                <div class="text-right">
+                <div class="sm:text-right shrink-0">
                   <div
                     :class="[
                       'inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold',
