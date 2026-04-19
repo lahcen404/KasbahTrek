@@ -100,7 +100,7 @@ const logoUrl = '/kasbah-trek.png';
       class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-orange-200/30 px-8 py-8 md:flex-row"
     >
       <p class="font-label text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400">
-        © 2024 KASBAH TREK. All rights reserved.
+        © 2026 KASBAH TREK. All rights reserved.
       </p>
       <div class="flex gap-8">
         <a

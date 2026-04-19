@@ -40,12 +40,20 @@ const travelerBookings = ref<TravelerBooking[]>([]);
 const currentTravelerId = ref<number | null>(null);
 
 // Booking sidebar UI
-const travelers = ref(2);
+const travelers = ref(1);
 const serviceFee = 25;
 
 const pricePerPerson = computed(() => tour.value?.price ?? 0);
 const subtotal = computed(() => pricePerPerson.value * travelers.value);
 const total = computed(() => subtotal.value + serviceFee);
+const remainingSpots = computed(() => {
+  if (!tour.value) return 0;
+  const max = Number(tour.value.max_spots ?? 0);
+  const booked = Number(tour.value.current_bookings ?? 0);
+  if (max <= 0) return 0;
+  return Math.max(0, max - booked);
+});
+const maxTravelersSelectable = computed(() => (remainingSpots.value > 0 ? remainingSpots.value : 1));
 
 const tourId = computed(() => Number(route.params.id));
 
@@ -121,12 +129,6 @@ const reviewEligibilityHint = computed(() => {
   if (!hasConfirmedPaidBookingForTour.value) return 'Review opens after your booking is confirmed and paid.';
   return null;
 });
-const minDate = computed(() => {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  return d.toISOString().split('T')[0];
-});
-
 const formattedTourDate = computed(() => {
   const date = tour.value?.date;
   if (!date) return 'Date not announced yet';
@@ -176,13 +178,13 @@ async function handleReserveClick(): Promise<void> {
     return;
   }
 
-  if (!selectedDate.value) {
-    reserveError.value = 'Please select a booking date.';
+  if (remainingSpots.value <= 0) {
+    reserveError.value = 'This tour is full. No spots left.';
     return;
   }
 
-  if (selectedDate.value < minDate.value) {
-    reserveError.value = 'Please choose a date after today.';
+  if (!selectedDate.value) {
+    reserveError.value = 'This tour has no valid date yet. Please try another tour.';
     return;
   }
 
@@ -703,12 +705,12 @@ onMounted(async () => {
                 >
                 <input
                   v-model="selectedDate"
-                  :min="minDate"
+                  readonly
                   type="date"
                   class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface"
                 />
                 <p class="text-xs text-on-surface-variant">
-                  Tour date from guide: {{ formattedTourDate }}
+                  Tour date is set by the guide: {{ formattedTourDate }}
                 </p>
               </div>
 
@@ -719,6 +721,7 @@ onMounted(async () => {
                     <button
                       type="button"
                       class="flex h-8 w-8 items-center justify-center rounded-full border border-outline text-slate-400"
+                      :disabled="travelers <= 1"
                       @click="travelers = Math.max(1, travelers - 1)"
                     >
                       -
@@ -727,12 +730,16 @@ onMounted(async () => {
                     <button
                       type="button"
                       class="flex h-8 w-8 items-center justify-center rounded-full border border-outline text-primary"
-                      @click="travelers = travelers + 1"
+                      :disabled="remainingSpots <= 0 || travelers >= maxTravelersSelectable"
+                      @click="travelers = Math.min(maxTravelersSelectable, travelers + 1)"
                     >
                       +
                     </button>
                   </div>
                 </div>
+                <p class="text-xs text-on-surface-variant">
+                  Spots left: {{ remainingSpots }}
+                </p>
 
                 <div class="space-y-2 py-4">
                   <div class="flex justify-between text-sm">
@@ -753,10 +760,10 @@ onMounted(async () => {
               <button
                 type="button"
                 class="w-full scale-[0.98] rounded-full bg-primary py-4 text-lg font-bold text-on-primary transition-all hover:brightness-110 hover:shadow-xl active:scale-95"
-                :disabled="reserving"
+                :disabled="reserving || remainingSpots <= 0"
                 @click="handleReserveClick"
               >
-                {{ reserving ? 'Reserving...' : 'Reserve My Spot' }}
+                {{ remainingSpots <= 0 ? 'Sold Out' : reserving ? 'Reserving...' : 'Reserve My Spot' }}
               </button>
 
               <p
