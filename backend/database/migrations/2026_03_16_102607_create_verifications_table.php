@@ -15,6 +15,7 @@ return new class extends Migration
         $table->string('file_url');
         $table->string('status')->default('PENDING');
         $table->foreignId('guide_id')->constrained('users')->onDelete('cascade');
+        $table->foreignId('admin_id')->nullable()->constrained('users')->onDelete('set null');
         $table->timestamps();
     });
 }
