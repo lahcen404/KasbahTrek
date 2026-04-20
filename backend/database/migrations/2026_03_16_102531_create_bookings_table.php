@@ -18,8 +18,11 @@ return new class extends Migration
         $table->foreignId('traveler_id')->constrained('users')->onDelete('cascade');
         $table->foreignId('tour_id')->constrained('tours')->onDelete('cascade');
         $table->foreignId('guide_id')->constrained('users')->onDelete('cascade');
+        $table->timestamp('reminder_sent_at')->nullable();
         $table->string('payment_status')->default('UNPAID');
         $table->timestamp('paid_at')->nullable();
+        $table->timestamp('payment_receipt_sent_at')->nullable();
+        $table->string('paypal_order_id')->nullable();
         $table->timestamps();
     });
 }

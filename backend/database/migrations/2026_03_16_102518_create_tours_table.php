@@ -19,6 +19,7 @@ return new class extends Migration
         $table->string('difficulty')->default('MEDIUM');
         $table->integer('max_spots');
         $table->unsignedInteger('duration_hours')->nullable();
+        $table->date('date')->nullable();
         $table->integer('current_bookings')->default(0);
         $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
         $table->foreignId('guide_id')->constrained('users')->onDelete('cascade');
