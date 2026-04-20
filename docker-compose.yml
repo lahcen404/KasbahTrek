@@ -1,7 +1,23 @@
 services:
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: kasbah_frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    volumes:
+      - ./frontend:/app
+      - ./kasbah-trek.png:/app/public/kasbah-trek.png:ro
+    depends_on:
+      - nginx
+    environment:
+      - VITE_API_TARGET=http://nginx:80
+    stdin_open: true
+    tty: true
 
-  kasbah_app:
+  kasbah_app:  
     build:
       context: ./
       dockerfile: ./Dockerfile
