@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { api, clearAuthToken, getAuthToken } from '../../api/client';
 import { createTravelerBooking, getTravelerBookings } from '../../api/bookings';
 import { getCurrentUser, getStoredUserRole } from '../../api/auth';
+import { useAuthStore } from '../../stores/auth';
 import { getTourById, tourImageUrl } from '../../api/tours';
 import { deleteReview, submitReview, updateReview } from '../../api/reviews';
 import { createTripReport } from '../../api/reports';
@@ -16,6 +17,7 @@ import type { Tour, TourReview } from '../../types/tours';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const loading = ref(true);
 const error = ref<string | null>(null);
@@ -97,7 +99,10 @@ const ratingAvg = computed(() => {
   return null;
 });
 const reviewsCount = computed(() => tour.value?.reviews_count ?? reviews.value.length);
-const isTraveler = computed(() => getStoredUserRole()?.toUpperCase() === 'TRAVELER');
+const isTraveler = computed(() => {
+  const role = authStore.role ?? getStoredUserRole();
+  return String(role ?? '').toUpperCase() === 'TRAVELER';
+});
 const hasValidSessionToken = computed(() => {
   const token = getAuthToken();
   return typeof token === 'string' && token.trim() !== '' && token !== 'null' && token !== 'undefined';

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, unref } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { tourImageUrl } from '../../api/tours';
 import { useTravelerFavorites } from '../../composables/useTravelerFavorites';
@@ -26,9 +26,24 @@ const travelerNavItems = [
 ] as const;
 
 const favoriteTours = computed(() =>
-  favoriteItems.value
-    .map((item) => item.tour)
-    .filter((tour): tour is Tour => Boolean(tour && typeof tour.id === 'number')),
+  (unref(favoriteItems) ?? [])
+    .map((item) => {
+      const tour = item.tour;
+      if (!tour) {
+        return null;
+      }
+
+      const id = Number((tour as { id?: number | string }).id);
+      if (!Number.isFinite(id) || id <= 0) {
+        return null;
+      }
+
+      return {
+        ...tour,
+        id,
+      } as Tour;
+    })
+    .filter((tour): tour is Tour => Boolean(tour)),
 );
 
 function money(value: number | string | null | undefined): string {
