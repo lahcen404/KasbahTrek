@@ -4,3 +4,8 @@ docs/COMPREHENSIVE*
 docs/PROJECT_*
 frontend/node_modules/
 frontend/.vite/
+
+.vite/
+**/.vite/
+
+frontend/dist/
