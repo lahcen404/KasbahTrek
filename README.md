@@ -10,6 +10,7 @@ A comprehensive tourism marketplace platform connecting travelers, local guides,
 
 ## 📋 Table of Contents
 
+- [Project Tracking](#-project-tracking)
 - [Project Context](#-project-context)
 - [Project Objectives](#-project-objectives)
 - [UML Diagrams](#-uml-diagrams)
@@ -18,6 +19,12 @@ A comprehensive tourism marketplace platform connecting travelers, local guides,
 - [Setup & Installation](#-setup--installation)
 - [Running Services](#-running-services)
 - [Design & Documentation](#-design--documentation)
+
+---
+
+## 📊 Project Tracking
+
+- **Jira Board**: [View Backlog & Epic Planning](https://lahcenmaskour2003.atlassian.net/jira/software/projects/KT/boards/1/backlog?epics=visible&atlOrigin=eyJpIjoiMmU4NmYzOTcwNmQ3NDA2NzgwZDgwZWE1MDA5ODA0YjQiLCJwIjoiaiJ9)
 
 ---
 

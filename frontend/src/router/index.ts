@@ -1,12 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { getAuthToken } from '../api/client';
-import {
-  getStoredUserRole,
-  normalizeAppRole,
-  setStoredUserRole,
-  syncCurrentUser,
-  type AppRole,
-} from '../api/auth';
+import { type AppRole } from '../api/auth';
+import { pinia } from '../stores';
+import { useAuthStore } from '../stores/auth';
 
 import HomePage from '../pages/common/HomePage.vue';
 import LoginPage from '../pages/auth/LoginPage.vue';
@@ -37,11 +32,6 @@ type RouteMetaGuard = {
   guestOnly?: boolean;
   roles?: AppRole[];
 };
-
-function hasValidToken(): boolean {
-  const token = getAuthToken();
-  return typeof token === 'string' && token.trim() !== '' && token !== 'null' && token !== 'undefined';
-}
 
 function homeByRole(role: AppRole | null): { name: string } {
   if (role === 'ADMIN') {
@@ -174,25 +164,23 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
+  const authStore = useAuthStore(pinia);
+
   const matched = to.matched.map((record) => (record.meta ?? {}) as RouteMetaGuard);
   const requiresAuth = matched.some((meta) => meta.requiresAuth);
   const guestOnly = matched.some((meta) => meta.guestOnly);
   const roles = matched.flatMap((meta) => meta.roles ?? []);
 
-  const tokenExists = hasValidToken();
-  let role = normalizeAppRole(getStoredUserRole());
+  const tokenExists = authStore.hasValidToken;
+  let role = authStore.role;
 
-  // When local role is missing/stale, sync once with /me before making guard decisions.
+  // Sync once with /me when role is missing or route decisions need fresh auth context.
   if (tokenExists && (!role || requiresAuth || guestOnly)) {
-    const user = await syncCurrentUser();
-    role = normalizeAppRole(user?.role ?? getStoredUserRole());
+    const user = await authStore.syncUser();
+    role = authStore.role;
 
     if (!user && requiresAuth) {
       return { name: 'login', query: { redirect: to.fullPath } };
-    }
-
-    if (user?.role) {
-      setStoredUserRole(user.role);
     }
   }
 
