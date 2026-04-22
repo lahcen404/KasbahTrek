@@ -1,11 +1,13 @@
+import { storeToRefs } from 'pinia';
 import { useFavoritesStore } from '../stores/favorites';
 
 export function useTravelerFavorites() {
   const favoritesStore = useFavoritesStore();
+  const { favoriteItems, loadingFavorites } = storeToRefs(favoritesStore);
 
   return {
-    favoriteItems: favoritesStore.favoriteItems,
-    loadingFavorites: favoritesStore.loadingFavorites,
+    favoriteItems,
+    loadingFavorites,
     isTravelerSession: favoritesStore.isTravelerSession,
     ensureFavoritesLoaded: favoritesStore.ensureFavoritesLoaded,
     isFavorite: favoritesStore.isFavorite,

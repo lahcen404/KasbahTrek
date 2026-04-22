@@ -1,32 +1,48 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { getAuthToken } from '../../api/client';
-import { getStoredUserRole, logout, normalizeAppRole } from '../../api/auth';
+import { normalizeAppRole } from '../../api/auth';
+import { useAuthStore } from '../../stores/auth';
 
 // logo url
 const logoUrl = '/kasbah-trek.png';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const isHome = computed(() => route.name === 'home');
 const isTours = computed(() => route.name === 'tours');
 const isGuideDashboard = computed(() => route.name === 'guide-dashboard');
+const isAdminDashboard = computed(() => route.name === 'admin-dashboard');
 const isTravelerProfile = computed(() => route.name === 'traveler-profile');
 const isGuideSection = computed(() => String(route.path).startsWith('/guide'));
 const isTravelerSection = computed(() => String(route.path).startsWith('/traveler'));
+const isTravelerFavorites = computed(() => route.name === 'traveler-favorites');
 
-const normalizedRole = computed(() => normalizeAppRole(getStoredUserRole()));
+const normalizedRole = computed(() => normalizeAppRole(authStore.role));
+const isAuthenticated = computed(() => authStore.isAuthenticated || Boolean(authStore.role));
 
 const showDashboardLink = computed(() => {
-  if (!hasValidToken()) {
+  if (!isAuthenticated.value) {
     return false;
   }
 
   return true;
 });
 
+const showFavoritesLink = computed(() => {
+  if (!isAuthenticated.value) {
+    return false;
+  }
+
+  return normalizedRole.value === 'TRAVELER' || isTravelerSection.value;
+});
+
 const dashboardRoute = computed(() => {
+  if (normalizedRole.value === 'ADMIN' || isAdminDashboard.value) {
+    return { name: 'admin-dashboard' as const };
+  }
+
   if (normalizedRole.value === 'GUIDE' || isGuideSection.value) {
     return { name: 'guide-dashboard' as const };
   }
@@ -39,18 +55,13 @@ const dashboardLabel = computed(() => {
 });
 
 const isDashboardActive = computed(() => {
-  return isGuideDashboard.value || isTravelerProfile.value || isTravelerSection.value;
+  return isGuideDashboard.value || isAdminDashboard.value || isTravelerProfile.value || isTravelerSection.value;
 });
 
 const mobileMenuOpen = ref(false);
 
-function hasValidToken(): boolean {
-  const token = getAuthToken();
-  return typeof token === 'string' && token.trim() !== '' && token !== 'null' && token !== 'undefined';
-}
-
 async function handleLogout(): Promise<void> {
-  await logout();
+  await authStore.logout();
   mobileMenuOpen.value = false;
   await router.push({ name: 'login' });
 }
@@ -113,6 +124,16 @@ watch(
           "
           >Tours</RouterLink
         >
+        <RouterLink
+          v-if="showFavoritesLink"
+          :to="{ name: 'traveler-favorites' }"
+          :class="
+            isTravelerFavorites
+              ? 'border-b-2 border-orange-800 pb-1 font-bold text-orange-800 dark:border-orange-400 dark:text-orange-400'
+              : 'text-slate-600 transition-colors hover:text-orange-800 dark:text-slate-400'
+          "
+          >Favorites</RouterLink
+        >
       </div>
 
       <div class="flex items-center gap-4">
@@ -128,7 +149,7 @@ watch(
             {{ mobileMenuOpen ? 'close' : 'menu' }}
           </span>
         </button>
-        <template v-if="!hasValidToken()">
+        <template v-if="!isAuthenticated">
           <RouterLink
             :to="{ name: 'login' }"
             class="hidden px-4 py-2 font-semibold text-slate-600 transition-colors hover:text-orange-800 md:block"
@@ -143,7 +164,7 @@ watch(
           </RouterLink>
         </template>
         <button
-          v-else
+          v-else-if="isAuthenticated"
           type="button"
           class="hidden rounded-full border border-outline-variant/30 bg-surface px-6 py-3 font-bold text-slate-700 transition-colors hover:bg-surface-container-low active:scale-95 md:inline-flex"
           @click="handleLogout"
@@ -178,9 +199,15 @@ watch(
               class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low"
               >Tours</RouterLink
             >
+            <RouterLink
+              v-if="showFavoritesLink"
+              :to="{ name: 'traveler-favorites' }"
+              class="rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-surface-container-low"
+              >Favorites</RouterLink
+            >
           </div>
 
-          <div class="mt-4 grid grid-cols-2 gap-3" v-if="!hasValidToken()">
+          <div class="mt-4 grid grid-cols-2 gap-3" v-if="!isAuthenticated">
             <RouterLink
               :to="{ name: 'login' }"
               class="rounded-full border border-outline-variant/30 bg-surface px-4 py-3 text-center font-bold text-slate-700 transition-colors hover:bg-surface-container-low active:scale-95"
@@ -194,7 +221,7 @@ watch(
               Register
             </RouterLink>
           </div>
-          <div class="mt-4" v-else>
+          <div class="mt-4" v-else-if="isAuthenticated">
             <button
               type="button"
               class="w-full rounded-full border border-outline-variant/30 bg-surface px-4 py-3 text-center font-bold text-slate-700 transition-colors hover:bg-surface-container-low active:scale-95"

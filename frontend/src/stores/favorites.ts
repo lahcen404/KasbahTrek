@@ -19,8 +19,9 @@ export const useFavoritesStore = defineStore('favorites', () => {
   function rebuildIndex(nextItems: TravelerFavorite[]): void {
     const index: Record<number, true> = {};
     for (const item of nextItems) {
-      if (typeof item.tour_id === 'number') {
-        index[item.tour_id] = true;
+      const tourId = Number(item.tour_id);
+      if (Number.isFinite(tourId) && tourId > 0) {
+        index[tourId] = true;
       }
     }
     idsIndex.value = index;
@@ -94,13 +95,13 @@ export const useFavoritesStore = defineStore('favorites', () => {
     try {
       if (isFavorite(tourId)) {
         await removeTravelerFavorite(tourId);
-        const remaining = items.value.filter((item) => item.tour_id !== tourId);
+        const remaining = items.value.filter((item) => Number(item.tour_id) !== tourId);
         setFavorites(remaining);
         return;
       }
 
       const created = await addTravelerFavorite(tourId);
-      const nextItems = [created, ...items.value.filter((item) => item.tour_id !== tourId)];
+      const nextItems = [created, ...items.value.filter((item) => Number(item.tour_id) !== tourId)];
       setFavorites(nextItems);
     } finally {
       const current = { ...pendingTourIds.value };
