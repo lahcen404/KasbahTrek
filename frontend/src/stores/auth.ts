@@ -17,10 +17,13 @@ import type { CurrentUser, LoginUser, RegisterRole } from '../types/auth';
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<CurrentUser | null>(null);
   const role = ref<AppRole | null>(normalizeAppRole(getStoredUserRole()));
+  const token = ref<string | null>(getAuthToken());
 
   const hasValidToken = computed(() => {
-    const token = getAuthToken();
-    return typeof token === 'string' && token.trim() !== '' && token !== 'null' && token !== 'undefined';
+    return typeof token.value === 'string'
+      && token.value.trim() !== ''
+      && token.value !== 'null'
+      && token.value !== 'undefined';
   });
 
   const isAuthenticated = computed(() => hasValidToken.value);
@@ -34,10 +37,12 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null;
     setRole(null);
     clearAuthToken();
+    token.value = null;
   }
 
   async function login(email: string, password: string): Promise<LoginUser> {
     const loggedIn = await loginApi(email, password);
+    token.value = getAuthToken();
     setRole(loggedIn.role);
     return loggedIn;
   }

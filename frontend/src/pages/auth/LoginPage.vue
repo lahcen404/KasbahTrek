@@ -2,10 +2,11 @@
 import type { AxiosError } from 'axios';
 import { ref } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { login } from '../../api/auth';
+import { useAuthStore } from '../../stores/auth';
 
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 
 const heroImageUrl =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuBijAFJemguYAboRkJQRvY8fpXaXuCFmU3MU8vdtvuO6T0RLZUaU-NDuW90lFNSjNXJDjk3KkZClyH7jeQcB5DvdZIQdLMEQh29Urw641FMyl9pXX6cDD97jYGEkszILa1E54x9i-OaCpZigjY6RxNYz1_M7weLfK7IbjZxnTO6_caCWgTLS0Ml9Z9lhLyxDbH-N9hXSScgvo8HCR0S4KOf9biOa3O8DxkRyi03HkkJbm7lSnPA_RtTt_HuvXJJpEYCD5LLpCOBzrw';
@@ -21,11 +22,15 @@ async function onSubmit() {
   errorMsg.value = '';
   loading.value = true;
   try {
-    await login(email.value.trim(), password.value);
+    await authStore.login(email.value.trim(), password.value);
     const redirectTarget =
       typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/')
         ? route.query.redirect
-        : '/';
+        : authStore.role === 'ADMIN'
+          ? '/admin/dashboard'
+          : authStore.role === 'GUIDE'
+            ? '/guide/dashboard'
+            : '/traveler/profile';
     await router.push(redirectTarget);
   } catch (e) {
     const err = e as AxiosError<{

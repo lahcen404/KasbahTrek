@@ -20,8 +20,8 @@ use Illuminate\Support\Facades\Route;
 // PUBLIIIC routes
 
 // auth routes
-Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:15,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:15,1');
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])->middleware('throttle:30,1');
 Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle'])->middleware('throttle:30,1');
