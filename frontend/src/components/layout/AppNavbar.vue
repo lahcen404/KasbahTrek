@@ -55,7 +55,7 @@ const dashboardLabel = computed(() => {
 });
 
 const isDashboardActive = computed(() => {
-  return isGuideDashboard.value || isAdminDashboard.value || isTravelerProfile.value || isTravelerSection.value;
+  return isGuideDashboard.value || isAdminDashboard.value || isTravelerProfile.value;
 });
 
 const mobileMenuOpen = ref(false);
