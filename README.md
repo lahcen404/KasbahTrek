@@ -2,7 +2,7 @@
 
 # 📘 Kasbah Trek – World Cup 2030 Tourism Platform
 
-> 🏔️ Mountains, lakes, forests, traditional life — special tours for World Cup 2030 visitors.
+> 🏔️ Mountains, lakes, forests, traditional life , special tours for World Cup 2030 visitors.
 
 A comprehensive tourism marketplace platform connecting travelers, local guides, and administrators for the Beni Mellal-Khénifra region in Morocco.
 
